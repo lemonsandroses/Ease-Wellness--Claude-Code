@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700;6..96,800&family=Jost:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Futura PT — supplied by the client. These files came from an unlicensed
+   redistributor, so buy a web licence (Monotype / MyFonts) before shipping.
+   Jost is the OFL fallback and is safe to ship as-is.
+
+   The unicode-range omits U+20B9: this Cyrillic build draws a ruble sign at the
+   rupee codepoint, so excluding it makes the browser fall through to the next
+   family in the stack, which renders ₹ correctly. */
+@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicLight.woff") format("woff"); font-weight: 300; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
+@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicBook.woff") format("woff"); font-weight: 400; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
+@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicMedium.woff") format("woff"); font-weight: 500; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
+@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicDemi.woff") format("woff"); font-weight: 600; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
+@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicBold.woff") format("woff"); font-weight: 700; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
+@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicExtraBold.woff") format("woff"); font-weight: 800; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
+
+@theme {
+  --font-sans: "Futura PT", "Jost", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bodoni Moda", ui-serif, Georgia, serif;
+
+  --color-tangerine: #F2701C;
+  --color-tangerine-deep: #A8480D;
+  --color-tangerine-wash: #FDF1E8;
+  --color-blue: #4E6E8E;
+  --color-blue-wash: #EDF1F5;
+  --color-ink: #14110F;
+  --color-bone: #FFFDFB;
+
+  --color-mist-100: #F6F3F0;
+  --color-mist-200: #E9E4DF;
+  --color-mist-300: #D3CCC5;
+  --color-mist-400: #A9A29B;
+  --color-mist-500: #7D766F;
+  --color-mist-600: #574F49;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 2px rgba(20, 17, 15, 0.03), 0 12px 32px -20px rgba(20, 17, 15, 0.18);
+  --shadow-lift: 0 2px 8px rgba(20, 17, 15, 0.06), 0 28px 56px -28px rgba(20, 17, 15, 0.24);
+}
+
+html,
+body,
+#root {
+  background-color: var(--color-bone);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  overscroll-behavior-y: none;
+}
+
+/* Reset default block margins so spacing comes from layout utilities only.
+   Tailwind v4's space-y-* is zero-specificity, so per-element `m-0` classes
+   would silently win over it. */
+/* In @layer base so Tailwind's utilities layer always wins — v4 emits
+   space-y-* inside :where(), which has zero specificity. */
+@layer base {
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  ul,
+  ol,
+  figure {
+    margin: 0;
+    padding: 0;
+  }
+
+  ul,
+  ol {
+    list-style: none;
+  }
+}
+
+/* Bodoni is a high-contrast display face: hero headlines and big numerals only.
+   Everything structural is Futura so it stays crisp at phone sizes. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+}
+
+.numeral {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  font-weight: 600;
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-mist-500);
+}
+
+.card {
+  background-color: #fff;
+  border: 1px solid var(--color-mist-200);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* Hide scrollbars on horizontal rails without losing scroll */
+.no-bar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-mist-100) 25%, var(--color-mist-200) 37%, var(--color-mist-100) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from { background-position: 100% 50%; }
+  to { background-position: 0 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+coverage/
+.DS_Store
+*.log
+
+# Never commit real keys
+.env
+.env.*
+!.env.example
+
+# Licensed font files — see index.css
+public/fonts/
