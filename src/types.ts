@@ -114,5 +114,5 @@ export interface AppState {
   meals: Meal[];
   events: CalendarItem[];
   achievements: Record<string, string>;
-  session: { email: string } | null;
+  session: { email: string; id: string } | null;
 }

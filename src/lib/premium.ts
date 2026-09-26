@@ -1,14 +1,24 @@
 import { useStore } from "./store";
+import { billingAvailable, usePurchases } from "./purchases";
 
 /**
- * Single source of truth for entitlement. Today it reads the profile flag that
- * the server owns; when RevenueCat lands it reads the SDK first (instant and
- * offline) with Supabase as the cross-device backstop. Every lock in the app
- * goes through here so there is one place to change.
+ * Single source of truth for entitlement.
+ *
+ * On a device the store is authoritative — RevenueCat knows about renewals,
+ * refunds, billing retries and family sharing, and it answers offline. The
+ * Supabase profile flag is the fallback for the web build and for the moment
+ * before the store has answered, so the UI never flickers a locked state at
+ * someone who has paid.
  */
 export function usePremium(): boolean {
   const { state } = useStore();
-  return state.profile.subscribed;
+  const { isPremium } = usePurchases();
+
+  const fromServer = state.profile.subscribed;
+  if (!billingAvailable) return fromServer;
+
+  // Undefined means the store hasn't replied yet.
+  return isPremium ?? fromServer;
 }
 
 /** What each lock says. Kept together so the pitch stays consistent. */

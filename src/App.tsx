@@ -5,6 +5,7 @@ import SettingsSheet from "@/components/SettingsSheet";
 import Splash from "@/screens/Splash";
 import Home from "@/screens/Home";
 import { useStore } from "@/lib/store";
+import { usePurchases } from "@/lib/purchases";
 import { page } from "@/lib/motion";
 import type { Pillar } from "@/types";
 
@@ -34,6 +35,7 @@ type Stage = "onboarding" | "auth" | "app";
 
 export default function App() {
   const { state, ready } = useStore();
+  const { ready: billingReady } = usePurchases();
   const [splashDone, setSplashDone] = useState(false);
   // Set only when the user navigates somewhere the derived stage wouldn't send
   // them — signing out, or reaching sign-in from the onboarding screen.
@@ -48,7 +50,9 @@ export default function App() {
   // Never decide where someone belongs until their profile has loaded once, or
   // a returning user on a new device gets pushed through onboarding again.
   // Only the first load blocks — later re-syncs happen behind the UI.
-  if (!ready) {
+  // Wait for the store too, so a paying user never sees a locked screen flash
+  // before their entitlement has been confirmed.
+  if (!ready || !billingReady) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center bg-bone">
         <p className="eyebrow">Loading your plan…</p>

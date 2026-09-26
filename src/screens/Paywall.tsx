@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
+import type { PurchasesPackage } from "@revenuecat/purchases-capacitor";
 import { Button, Eyebrow } from "@/components/ui";
 import { useStore } from "@/lib/store";
+import { billingAvailable, usePurchases } from "@/lib/purchases";
 
 const BENEFITS = [
   "The full body protocol — exercise, stress, metabolism, skin and hair",
@@ -11,15 +13,84 @@ const BENEFITS = [
   "Trophies and badges for every streak you build",
 ];
 
+/** Shown when the store hasn't answered — matches the products we configure. */
+const FALLBACK = [
+  { id: "annual", name: "Annual", price: "₹6,999", period: "per year", footnote: "₹583 a month · two months free", badge: "Best value" },
+  { id: "monthly", name: "Monthly", price: "₹699", period: "per month", footnote: "Cancel any time" },
+];
+
 export default function Paywall({ onClose }: { onClose: () => void }) {
   const { saveProfile } = useStore();
-  const [plan, setPlan] = useState<"monthly" | "annual">("annual");
+  const { packages, purchase, restore, refresh } = usePurchases();
+  const [selected, setSelected] = useState<string>("annual");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  // Placeholder until StoreKit and Play Billing are wired through RevenueCat.
-  // Real entitlement will arrive via webhook into the subscriptions table.
-  const start = () => {
-    saveProfile({ subscribed: true, plan });
-    onClose();
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  // Prices come from the store so they're localised and always current; the
+  // hardcoded list is only a placeholder before the store replies.
+  const options = packages.length
+    ? packages.map((p) => ({
+        id: p.identifier,
+        name: p.product.title.replace(/\s*\(.*\)$/, ""),
+        price: p.product.priceString,
+        period: p.packageType === "ANNUAL" ? "per year" : "per month",
+        footnote: p.packageType === "ANNUAL" ? "Best value" : "Cancel any time",
+        badge: p.packageType === "ANNUAL" ? "Best value" : undefined,
+        pkg: p as PurchasesPackage,
+      }))
+    : FALLBACK.map((f) => ({ ...f, pkg: undefined as PurchasesPackage | undefined }));
+
+  const chosen = options.find((o) => o.id === selected) ?? options[0];
+
+  const start = async () => {
+    setError("");
+    setBusy(true);
+    try {
+      if (chosen?.pkg) {
+        await purchase(chosen.pkg);
+        onClose();
+        return;
+      }
+      // No store available (web build): record intent locally so development
+      // and the web preview stay usable. Real entitlement always comes from
+      // the store or the server, never from here.
+      if (!billingAvailable) {
+        saveProfile({ subscribed: true, plan: selected === "annual" ? "annual" : "monthly" });
+        onClose();
+        return;
+      }
+      setError("Couldn't reach the store. Try again in a moment.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      // A user tapping cancel is not an error worth shouting about.
+      if (!/cancel/i.test(msg)) setError("That didn't go through. You haven't been charged.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onRestore = async () => {
+    setError("");
+    setMessage("");
+    setBusy(true);
+    try {
+      const active = await restore();
+      if (active) {
+        setMessage("Your subscription is back.");
+        setTimeout(onClose, 900);
+      } else {
+        setMessage("No previous purchase found on this account.");
+      }
+    } catch {
+      setError("Couldn't restore right now. Try again in a moment.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -48,45 +119,53 @@ export default function Paywall({ onClose }: { onClose: () => void }) {
       </ul>
 
       <div className="mt-8 space-y-3">
-        <PlanCard
-          selected={plan === "annual"}
-          onSelect={() => setPlan("annual")}
-          name="Annual"
-          price="₹6,999"
-          period="per year"
-          footnote="₹583 a month · two months free"
-          badge="Best value"
-        />
-        <PlanCard
-          selected={plan === "monthly"}
-          onSelect={() => setPlan("monthly")}
-          name="Monthly"
-          price="₹699"
-          period="per month"
-          footnote="Cancel any time"
-        />
+        {options.map((o) => (
+          <PlanCard
+            key={o.id}
+            selected={chosen?.id === o.id}
+            onSelect={() => setSelected(o.id)}
+            name={o.name}
+            price={o.price}
+            period={o.period}
+            footnote={o.footnote}
+            badge={o.badge}
+          />
+        ))}
       </div>
 
+      {message ? <p className="mt-4 text-center text-[13px] font-medium text-blue">{message}</p> : null}
+      {error ? (
+        <p role="alert" className="mt-4 text-center text-[13px] font-medium text-[#B4321F]">
+          {error}
+        </p>
+      ) : null}
+
       <div className="mt-auto pt-8">
-        <Button full onClick={start}>
-          Start free trial
+        <Button full onClick={start} disabled={busy}>
+          {busy ? "One moment…" : "Start free trial"}
         </Button>
 
         <button onClick={onClose} className="mt-3 w-full text-center text-[13px] text-mist-500">
           Not now
         </button>
 
-        {/* Apple requires these terms on the paywall itself — missing them is a
-            common rejection. Restore is mandatory on iOS. */}
+        {/* Apple requires these terms on the paywall itself, and a working
+            Restore Purchases — both are common rejection reasons. */}
         <p className="mt-5 text-center text-[11px] leading-relaxed text-mist-400">
           Payment is charged to your store account at confirmation of purchase. Your subscription renews automatically
-          at {plan === "annual" ? "₹6,999 a year" : "₹699 a month"} unless cancelled at least 24 hours before the end
-          of the current period. Manage or cancel in your account settings.
+          at {chosen?.price} {chosen?.period} unless cancelled at least 24 hours before the end of the current period.
+          Manage or cancel in your account settings.
         </p>
         <div className="mt-3 flex justify-center gap-5 text-[11.5px] text-blue">
-          <button className="underline-offset-4 hover:underline">Restore purchases</button>
-          <button className="underline-offset-4 hover:underline">Terms</button>
-          <button className="underline-offset-4 hover:underline">Privacy</button>
+          <button onClick={onRestore} disabled={busy} className="underline-offset-4 hover:underline">
+            Restore purchases
+          </button>
+          <a href="https://easewellness.app/terms" className="underline-offset-4 hover:underline">
+            Terms
+          </a>
+          <a href="https://easewellness.app/privacy" className="underline-offset-4 hover:underline">
+            Privacy
+          </a>
         </div>
       </div>
     </div>

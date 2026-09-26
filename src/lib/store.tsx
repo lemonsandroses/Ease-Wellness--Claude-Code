@@ -180,7 +180,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data }) => {
       const session = data.session;
       userId.current = session?.user.id ?? null;
-      setState((s) => ({ ...s, session: session ? { email: session.user.email ?? "" } : null }));
+      setState((s) => ({ ...s, session: session ? { email: session.user.email ?? "", id: session.user.id } : null }));
       if (session) void hydrate(session.user.id);
       else {
         setStatus("local");
@@ -190,7 +190,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       userId.current = session?.user.id ?? null;
-      setState((s) => ({ ...s, session: session ? { email: session.user.email ?? "" } : null }));
+      setState((s) => ({ ...s, session: session ? { email: session.user.email ?? "", id: session.user.id } : null }));
       if (session) void hydrate(session.user.id);
       else {
         setStatus("local");
