@@ -1,18 +1,34 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import NavBar, { type Tab } from "@/components/NavBar";
 import SettingsSheet from "@/components/SettingsSheet";
-import Calendar from "@/screens/Calendar";
 import Splash from "@/screens/Splash";
-import Onboarding from "@/screens/Onboarding";
-import Auth from "@/screens/Auth";
-import Paywall from "@/screens/Paywall";
 import Home from "@/screens/Home";
-import Body from "@/screens/Body";
-import Patterns from "@/screens/Patterns";
 import { useStore } from "@/lib/store";
 import { page } from "@/lib/motion";
 import type { Pillar } from "@/types";
+
+// Home and the splash load eagerly — they're the first thing anyone sees.
+// Everything else is fetched on demand, which keeps Recharts (the single
+// heaviest dependency, used only by Patterns) out of the startup bundle.
+const Calendar = lazy(() => import("@/screens/Calendar"));
+const Body = lazy(() => import("@/screens/Body"));
+const Patterns = lazy(() => import("@/screens/Patterns"));
+const Onboarding = lazy(() => import("@/screens/Onboarding"));
+const Auth = lazy(() => import("@/screens/Auth"));
+const Paywall = lazy(() => import("@/screens/Paywall"));
+
+/** Shown only for the instant a lazy chunk is in flight. */
+function ScreenFallback() {
+  return (
+    <div className="mx-auto w-full max-w-md px-5 pt-10">
+      <div className="skeleton h-4 w-24 rounded-full" />
+      <div className="skeleton mt-4 h-9 w-48 rounded-lg" />
+      <div className="skeleton mt-6 h-40 w-full rounded-[var(--radius-card)]" />
+      <div className="skeleton mt-4 h-40 w-full rounded-[var(--radius-card)]" />
+    </div>
+  );
+}
 
 type Stage = "onboarding" | "auth" | "app";
 
@@ -47,9 +63,19 @@ export default function App() {
   const clear = () => setOverride(null);
 
   if (stage === "onboarding") {
-    return <Onboarding onDone={clear} onSignIn={() => setOverride("auth")} />;
+    return (
+      <Suspense fallback={<ScreenFallback />}>
+        <Onboarding onDone={clear} onSignIn={() => setOverride("auth")} />
+      </Suspense>
+    );
   }
-  if (stage === "auth") return <Auth onDone={clear} />;
+  if (stage === "auth") {
+    return (
+      <Suspense fallback={<ScreenFallback />}>
+        <Auth onDone={clear} />
+      </Suspense>
+    );
+  }
 
   const openPaywall = () => setPaywallOpen(true);
 
@@ -67,9 +93,11 @@ export default function App() {
               }}
             />
           ) : null}
-          {tab === "calendar" ? <Calendar onUnlock={openPaywall} /> : null}
-          {tab === "body" ? <Body pillar={pillar} onPillar={setPillar} onUnlock={openPaywall} /> : null}
-          {tab === "patterns" ? <Patterns onUnlock={openPaywall} /> : null}
+          <Suspense fallback={<ScreenFallback />}>
+            {tab === "calendar" ? <Calendar onUnlock={openPaywall} /> : null}
+            {tab === "body" ? <Body pillar={pillar} onPillar={setPillar} onUnlock={openPaywall} /> : null}
+            {tab === "patterns" ? <Patterns onUnlock={openPaywall} /> : null}
+          </Suspense>
         </motion.main>
       </AnimatePresence>
 
@@ -94,7 +122,9 @@ export default function App() {
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.22 }}
           >
-            <Paywall onClose={() => setPaywallOpen(false)} />
+            <Suspense fallback={<ScreenFallback />}>
+              <Paywall onClose={() => setPaywallOpen(false)} />
+            </Suspense>
           </motion.div>
         ) : null}
       </AnimatePresence>
