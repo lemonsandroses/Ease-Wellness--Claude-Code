@@ -12,3 +12,15 @@ coverage/
 
 # Licensed font files — see index.css
 public/fonts/
+
+# Capacitor native build output (projects themselves are committed)
+ios/App/App/public/
+ios/App/Pods/
+ios/App/output/
+ios/App/build/
+android/app/src/main/assets/public/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+.DS_Store
