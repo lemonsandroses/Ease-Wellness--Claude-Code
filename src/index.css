@@ -54,6 +54,38 @@ body {
   overscroll-behavior-y: none;
 }
 
+:root {
+  /* Zero in a browser, the notch / Dynamic Island height on a phone. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* The viewport is viewport-fit=cover so the design reaches the screen edges —
+   which means we owe the status bar its space back here. */
+#root {
+  padding-top: var(--safe-top);
+}
+
+/* Safari gives date and time inputs a wide intrinsic width and refuses to
+   shrink them, so on iOS they burst out of their container. Forcing block
+   display with a hard width is the only reliable fix. */
+input[type="date"],
+input[type="time"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Without this the value sits flush left against the padding on iOS. */
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 /* Reset default block margins so spacing comes from layout utilities only.
    Tailwind v4's space-y-* is zero-specificity, so per-element `m-0` classes
    would silently win over it. */

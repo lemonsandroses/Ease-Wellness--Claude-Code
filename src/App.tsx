@@ -5,7 +5,6 @@ import SettingsSheet from "@/components/SettingsSheet";
 import Splash from "@/screens/Splash";
 import Home from "@/screens/Home";
 import { useStore } from "@/lib/store";
-import { usePurchases } from "@/lib/purchases";
 import { page } from "@/lib/motion";
 import type { Pillar } from "@/types";
 
@@ -35,7 +34,6 @@ type Stage = "onboarding" | "auth" | "app";
 
 export default function App() {
   const { state, ready } = useStore();
-  const { ready: billingReady } = usePurchases();
   const [splashDone, setSplashDone] = useState(false);
   // Set only when the user navigates somewhere the derived stage wouldn't send
   // them — signing out, or reaching sign-in from the onboarding screen.
@@ -50,11 +48,12 @@ export default function App() {
   // Never decide where someone belongs until their profile has loaded once, or
   // a returning user on a new device gets pushed through onboarding again.
   // Only the first load blocks — later re-syncs happen behind the UI.
-  // Wait for the store too, so a paying user never sees a locked screen flash
-  // before their entitlement has been confirmed.
-  if (!ready || !billingReady) {
+  // Deliberately not gated on the billing SDK. If the store is slow or
+  // unreachable the app must still open — entitlement falls back to the
+  // server flag until the store answers.
+  if (!ready) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-bone">
+      <div className="flex min-h-[calc(100dvh-var(--safe-top))] items-center justify-center bg-bone">
         <p className="eyebrow">Loading your plan…</p>
       </div>
     );
@@ -84,7 +83,7 @@ export default function App() {
   const openPaywall = () => setPaywallOpen(true);
 
   return (
-    <div className="min-h-[100dvh] bg-bone">
+    <div className="min-h-[calc(100dvh-var(--safe-top))] bg-bone">
       <AnimatePresence mode="wait" initial={false}>
         <motion.main key={tab} variants={page} initial="hidden" animate="show" exit="exit">
           {tab === "home" ? (

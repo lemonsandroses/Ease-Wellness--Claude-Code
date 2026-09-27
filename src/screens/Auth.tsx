@@ -89,7 +89,7 @@ export default function Auth({ onDone }: { onDone: () => void }) {
 
   if (sentTo) {
     return (
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-10 pt-20">
+      <div className="mx-auto flex min-h-[calc(100dvh-var(--safe-top))] w-full max-w-md flex-col px-5 pb-10 pt-20">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-tangerine-wash text-tangerine">
           <MailCheck className="h-6 w-6" />
         </span>
@@ -116,7 +116,7 @@ export default function Auth({ onDone }: { onDone: () => void }) {
 
   if (resetSent) {
     return (
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-10 pt-20">
+      <div className="mx-auto flex min-h-[calc(100dvh-var(--safe-top))] w-full max-w-md flex-col px-5 pb-10 pt-20">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-tangerine-wash text-tangerine">
           <MailCheck className="h-6 w-6" />
         </span>
@@ -144,7 +144,7 @@ export default function Auth({ onDone }: { onDone: () => void }) {
         : "Sign in to reach your cycle history and today's plan.";
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-10 pt-16">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--safe-top))] w-full max-w-md flex-col px-5 pb-10 pt-16">
       <Eyebrow>{mode === "signup" ? "Create your account" : mode === "forgot" ? "Password" : "Welcome back"}</Eyebrow>
       <h1 className="display mt-2 text-[38px] text-tangerine">{heading}</h1>
       <p className="mt-3 text-[14px] leading-relaxed text-mist-500">{blurb}</p>

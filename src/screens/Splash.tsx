@@ -11,7 +11,7 @@ export default function Splash({ onDone }: { onDone: () => void }) {
     <motion.button
       onClick={onDone}
       aria-label="Continue"
-      className="flex min-h-[100dvh] w-full flex-col items-center justify-center bg-bone px-8"
+      className="flex min-h-[calc(100dvh-var(--safe-top))] w-full flex-col items-center justify-center bg-bone px-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

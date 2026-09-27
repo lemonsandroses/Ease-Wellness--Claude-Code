@@ -214,7 +214,7 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
   if (isSummary) {
     const focusLabels = FOCUS_OPTIONS.filter((f) => draft.focus.includes(f.id)).map((f) => f.label);
     return (
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-10 pt-14">
+      <div className="mx-auto flex min-h-[calc(100dvh-var(--safe-top))] w-full max-w-md flex-col px-5 pb-10 pt-14">
         <Eyebrow>Calibration complete</Eyebrow>
         <h1 className="display mt-2 text-[38px] text-tangerine">
           {draft.name ? `${draft.name}, your plan is ready.` : "Your plan is ready."}
@@ -248,7 +248,7 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
   }
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-8 pt-12">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--safe-top))] w-full max-w-md flex-col px-5 pb-8 pt-12">
       <div className="mb-8 flex items-center gap-1.5" aria-label={`Step ${step + 1} of ${steps.length}`}>
         {steps.map((_, i) => (
           <span

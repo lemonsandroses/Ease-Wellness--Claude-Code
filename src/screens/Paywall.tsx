@@ -94,7 +94,7 @@ export default function Paywall({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-10 pt-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--safe-top))] w-full max-w-md flex-col px-5 pb-10 pt-6">
       <button
         onClick={onClose}
         aria-label="Close"

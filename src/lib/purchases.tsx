@@ -70,6 +70,13 @@ export function PurchasesProvider({ userId, children }: { userId?: string; child
 
     let cancelled = false;
 
+    // A hung SDK call must not leave the app waiting forever. Nothing here
+    // blocks rendering, but `ready` should still settle so the paywall knows
+    // whether to trust the store.
+    const timeout = setTimeout(() => {
+      if (!cancelled) setReady(true);
+    }, 5000);
+
     (async () => {
       try {
         await Purchases.setLogLevel({ level: import.meta.env.DEV ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR });
@@ -80,12 +87,14 @@ export function PurchasesProvider({ userId, children }: { userId?: string; child
       } catch (err) {
         console.warn("RevenueCat could not start", err);
       } finally {
+        clearTimeout(timeout);
         if (!cancelled) setReady(true);
       }
     })();
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
     };
   }, [userId, refresh]);
 
