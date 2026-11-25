@@ -1,15 +1,22 @@
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { Capacitor } from "@capacitor/core";
 import { supabase } from "./supabase";
 
 /**
  * Meal photos: capture, downscale, upload, and read back.
  *
- * The plugin is imported on demand rather than at the top. It carries a web
- * implementation that would otherwise sit in the startup bundle for every
- * launch, on a path most people only reach after they have already decided to
- * log a meal.
+ * The plugin is imported statically, and that is deliberate.
+ *
+ * It used to be `await import("@capacitor/camera")`, to keep ~50KB out of the
+ * startup bundle. Under `capacitor://localhost` that dynamic import never
+ * settled: the chunk request completed, but the promise neither resolved nor
+ * rejected. Every `await` behind it waited forever, so both photo buttons did
+ * nothing at all — no picker, no permission prompt, no error, nothing in the
+ * log. A silent hang is the worst failure mode available, and it cost two
+ * rounds of wrong diagnosis before instrumentation pinned it to this line.
+ *
+ * Fifty kilobytes at launch is the price of the buttons working.
  */
-const cameraPlugin = () => import("@capacitor/camera").then((m) => m.Camera);
 
 export const BUCKET = "meal-photos";
 
@@ -92,9 +99,6 @@ export async function capturePhoto(source: PhotoSource): Promise<CapturedPhoto> 
 }
 
 async function captureNative(source: PhotoSource): Promise<Blob> {
-  const Camera = await cameraPlugin();
-  const { CameraResultType, CameraSource } = await import("@capacitor/camera");
-
   // Ask explicitly rather than letting getPhoto trigger it. Requesting up
   // front means the first tap shows the system prompt and we can read the
   // answer, instead of getting an opaque throw that is hard to tell apart

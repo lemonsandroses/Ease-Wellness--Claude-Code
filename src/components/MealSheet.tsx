@@ -39,6 +39,10 @@ const FIELDS = [
 
 type Macros = Pick<Meal, "calories" | "protein" | "carbs" | "fats" | "fibre">;
 
+/** Marks an error as belonging to the photo controls rather than to saving,
+ *  so each one renders beside the thing that produced it. */
+const PHOTO_ERROR_PREFIX = "photo:";
+
 export default function MealSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { state, addMeal } = useStore();
   const [slot, setSlot] = useState<Meal["slot"]>("lunch");
@@ -122,16 +126,17 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
       if (err instanceof CaptureCancelled) return; // Backing out is not an error.
       if (err instanceof CapturePermissionDenied) {
         setError(
-          src === "camera"
-            ? "Ease doesn't have camera access. Turn it on in Settings › Ease › Camera."
-            : "Ease doesn't have photo access. Turn it on in Settings › Ease › Photos.",
+          PHOTO_ERROR_PREFIX +
+            (src === "camera"
+              ? "Ease doesn't have camera access. Turn it on in Settings › Ease › Camera."
+              : "Ease doesn't have photo access. Turn it on in Settings › Ease › Photos."),
         );
         return;
       }
       // Anything else: show what actually went wrong. A generic message here
       // was how a permission failure managed to look like a dead button.
       const detail = err instanceof Error && err.message ? err.message : "Unknown error";
-      setError(`Couldn't get that photo — ${detail}`);
+      setError(`${PHOTO_ERROR_PREFIX}Couldn't get that photo — ${detail}`);
     }
   };
 
@@ -262,6 +267,16 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
             )}
           </AnimatePresence>
 
+          {/* A failed capture reports itself here, under the buttons that were
+              tapped. This used to render at the foot of the sheet, below six
+              meal presets and a macro grid — roughly a thousand pixels out of
+              sight — so every photo failure looked like a dead button. */}
+          {error && error.startsWith(PHOTO_ERROR_PREFIX) ? (
+            <p className="mt-2.5 text-[13px] font-medium text-alarm">
+              {error.slice(PHOTO_ERROR_PREFIX.length)}
+            </p>
+          ) : null}
+
           {!state.session && photo ? (
             <p className="mt-2 text-[12px] leading-relaxed text-dusk">
               Photos upload once you have an account. This one stays on the device.
@@ -365,7 +380,11 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
         </section>
 
         {notice ? <p className="text-[12.5px] leading-relaxed text-plasma-bright">{notice}</p> : null}
-        {error ? <p className="text-[13px] font-medium text-alarm">{error}</p> : null}
+        {/* Save errors belong here, beside the save button that caused them.
+            Capture errors do not — see the photo section above. */}
+        {error && !error.startsWith(PHOTO_ERROR_PREFIX) ? (
+          <p className="text-[13px] font-medium text-alarm">{error}</p>
+        ) : null}
       </div>
 
       <Button full onClick={save} disabled={busy || estimating} className="mt-7">
