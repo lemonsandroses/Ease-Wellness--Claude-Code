@@ -1,49 +1,107 @@
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700;6..96,800&family=Jost:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Jost:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* Futura PT — supplied by the client. These files came from an unlicensed
-   redistributor, so buy a web licence (Monotype / MyFonts) before shipping.
-   Jost is the OFL fallback and is safe to ship as-is.
+/* ═══════════════════════════════════════════════════════════════════════
+   OBSIDIAN BLOOM — the Ease design system
+   ───────────────────────────────────────────────────────────────────────
+   Backlit stained glass, liquid lip gloss and cyber-silk on obsidian.
 
-   The unicode-range omits U+20B9: this Cyrillic build draws a ruble sign at the
-   rupee codepoint, so excluding it makes the browser fall through to the next
-   family in the stack, which renders ₹ correctly. */
-@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicLight.woff") format("woff"); font-weight: 300; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
-@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicBook.woff") format("woff"); font-weight: 400; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
-@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicMedium.woff") format("woff"); font-weight: 500; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
-@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicDemi.woff") format("woff"); font-weight: 600; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
-@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicBold.woff") format("woff"); font-weight: 700; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
-@font-face { font-family: "Futura PT"; src: url("/fonts/FuturaCyrillicExtraBold.woff") format("woff"); font-weight: 800; font-display: swap; unicode-range: U+0000-20B8, U+20BA-10FFFF; }
+   Three rules hold the whole system together:
+
+   1. NOTHING IS PURE NEUTRAL. Every surface carries a violet undertone.
+      Pure grey on black reads as "unstyled dark mode"; a violet-shifted
+      obsidian reads as atmosphere. That one decision does more for the
+      mood than any amount of decoration.
+
+   2. LIGHT COMES FROM BEHIND. Panels are lit at their top edge by a
+      hairline specular, the way light passes through stained glass rather
+      than bouncing off a card. Shadows push down, glow bleeds up.
+
+   3. MAGENTA IS A SIGNAL, NOT A SURFACE. Gloss is reserved for the thing
+      that matters most on screen — one per view. Gold and rhinestone are
+      micro-accents, measured in single pixels, never fills.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Jost is the typeface. It is an OFL-licensed geometric sans in the Futura
+   lineage — same circular bowls and single-storey 'a', which is what the
+   layout was proportioned around — and it ships without a licence to buy.
+
+   It replaces a set of Futura PT files that came from an unlicensed
+   redistributor. Those are kept out of the build entirely rather than merely
+   unreferenced: anything left in public/ is copied verbatim into dist and
+   would have shipped inside the IPA regardless of whether any CSS asked for
+   it. They now live in vendor/futura-unlicensed/, outside the build. */
 
 @theme {
-  --font-sans: "Futura PT", "Jost", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bodoni Moda", ui-serif, Georgia, serif;
+  --font-sans: "Jost", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
 
-  --color-tangerine: #F2701C;
-  --color-tangerine-deep: #A8480D;
-  --color-tangerine-wash: #FDF1E8;
-  --color-blue: #4E6E8E;
-  --color-blue-wash: #EDF1F5;
-  --color-ink: #14110F;
-  --color-bone: #FFFDFB;
+  /* ── Surfaces ──────────────────────────────────────────────────────────
+     An obsidian ramp with a violet cast. The steps are deliberately close
+     together: on an OLED phone, big jumps between surfaces look like
+     mistakes, while a tight ramp plus a lit edge reads as real depth. */
+  --color-void: #06040B;        /* page floor, behind everything */
+  --color-obsidian: #0C0816;    /* base surface */
+  --color-onyx: #140E22;        /* raised — cards, rails */
+  --color-slate: #1C1430;       /* elevated — inputs, sheets */
+  --color-quartz: #271C42;      /* highest — pressed, selected */
 
-  --color-mist-100: #F6F3F0;
-  --color-mist-200: #E9E4DF;
-  --color-mist-300: #D3CCC5;
-  --color-mist-400: #A9A29B;
-  --color-mist-500: #7D766F;
-  --color-mist-600: #574F49;
+  /* ── Lines ─────────────────────────────────────────────────────────────
+     Hairlines do the structural work that drop shadows do in a light UI. */
+  --color-veil: #241A3C;        /* default hairline */
+  --color-veil-strong: #38294F; /* emphasised hairline, focus ring */
 
-  --radius-card: 1.25rem;
-  --shadow-card: 0 1px 2px rgba(20, 17, 15, 0.03), 0 12px 32px -20px rgba(20, 17, 15, 0.18);
-  --shadow-lift: 0 2px 8px rgba(20, 17, 15, 0.06), 0 28px 56px -28px rgba(20, 17, 15, 0.24);
+  /* ── Text ──────────────────────────────────────────────────────────────
+     Never #FFF. Pure white on near-black vibrates and looks cheap; a
+     warm-violet pearl sits on obsidian without buzzing. */
+  --color-pearl: #F6F1F8;       /* primary */
+  --color-silk: #C8BDD8;        /* body, secondary */
+  --color-ash: #B4A8C8;         /* captions, muted — 7.9:1 on a card */
+  --color-dusk: #8C80A8;        /* faint, inactive — 4.9:1, the AA floor */
+
+  /* ── Gloss: liquid lip magenta ─────────────────────────────────────────
+     The brand. Reserved for the single most important thing in a view. */
+  --color-gloss: #FF2D87;
+  --color-gloss-bright: #FF7AB8; /* specular highlight, text on a gloss veil */
+  --color-gloss-deep: #A8004B;   /* pressed state */
+  --color-gloss-veil: #330D24;   /* an opaque mix of gloss into obsidian, so
+                                    it composites correctly over any surface */
+
+  /* ── Plasma: cyber violet ──────────────────────────────────────────────
+     The second voice. Carries estimates, hints, anything provisional. */
+  --color-plasma: #7B4DFF;
+  --color-plasma-bright: #AE93FF;
+  --color-plasma-veil: #1B1340;
+
+  /* ── Metallics: gold and rhinestone ────────────────────────────────────
+     Micro-accents only — 1px strokes, tiny dots, never a fill. */
+  --color-gilt: #E3B873;
+  --color-rhinestone: #EFE6FF;
+
+  /* ── Signal ────────────────────────────────────────────────────────────
+     Functional colour, kept out of the brand palette on purpose so a good
+     reading never gets confused with a decorative flourish. */
+  --color-mint: #5FE3C0;
+  /* Errors sit in coral, deliberately far from gloss in hue. A red-magenta
+     warning next to a magenta brand reads as decoration, not a problem. */
+  --color-alarm: #FF8A6B;
+
+  --radius-card: 1.5rem;
+
+  /* Depth below, glow above — the inverse of a light UI's drop shadow. */
+  --shadow-card: 0 1px 0 rgba(239, 230, 255, 0.045) inset,
+                 0 18px 44px -28px rgba(0, 0, 0, 0.9);
+  --shadow-lift: 0 1px 0 rgba(239, 230, 255, 0.07) inset,
+                 0 32px 64px -32px rgba(0, 0, 0, 0.95),
+                 0 0 48px -20px rgba(123, 77, 255, 0.3);
+  --shadow-gloss: 0 10px 30px -12px rgba(255, 45, 135, 0.55);
 }
 
 html,
 body,
 #root {
-  background-color: var(--color-bone);
-  color: var(--color-ink);
+  background-color: var(--color-void);
+  color: var(--color-pearl);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -52,18 +110,95 @@ body,
 body {
   margin: 0;
   overscroll-behavior-y: none;
+  /* Rubber-band overscroll on iOS exposes the element behind the body. On a
+     dark app that flashes white unless the colour is set here too. */
+  background-color: var(--color-void);
 }
 
 :root {
   /* Zero in a browser, the notch / Dynamic Island height on a phone. */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
 }
 
 /* The viewport is viewport-fit=cover so the design reaches the screen edges —
    which means we owe the status bar its space back here. */
 #root {
   padding-top: var(--safe-top);
+  position: relative;
+  z-index: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ATMOSPHERE
+   Opal's depth comes from the background never being flat. Three fixed
+   radial pools — violet high, magenta low — sit behind every screen and
+   don't scroll, so content appears to move through a lit space rather than
+   over a colour. Fixed rather than animated: a permanently moving
+   background is exhausting on a screen someone opens twenty times a day.
+   ───────────────────────────────────────────────────────────────────────── */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(90% 55% at 50% -8%, rgba(123, 77, 255, 0.26) 0%, transparent 70%),
+    radial-gradient(70% 45% at 92% 18%, rgba(255, 45, 135, 0.16) 0%, transparent 72%),
+    radial-gradient(85% 50% at 8% 88%, rgba(255, 45, 135, 0.1) 0%, transparent 70%),
+    var(--color-void);
+}
+
+/* A faint starfield, drawn rather than loaded — no network request, no asset
+   to version. Eight points at mixed sizes so it doesn't read as a grid. */
+.atmosphere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.4px 1.4px at 18% 12%, rgba(239, 230, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 72% 8%, rgba(255, 122, 184, 0.45), transparent),
+    radial-gradient(1.2px 1.2px at 37% 34%, rgba(239, 230, 255, 0.34), transparent),
+    radial-gradient(1px 1px at 88% 44%, rgba(239, 230, 255, 0.3), transparent),
+    radial-gradient(1.5px 1.5px at 8% 58%, rgba(255, 122, 184, 0.3), transparent),
+    radial-gradient(1px 1px at 61% 71%, rgba(239, 230, 255, 0.28), transparent),
+    radial-gradient(1.2px 1.2px at 28% 86%, rgba(239, 230, 255, 0.22), transparent),
+    radial-gradient(1px 1px at 93% 92%, rgba(255, 122, 184, 0.26), transparent);
+  background-repeat: repeat;
+  background-size: 420px 520px;
+  opacity: 0.85;
+}
+
+/* Grain. Obsidian gradients band badly on 8-bit phone panels; a little noise
+   dithers the steps away and happens to look like film at the same time. */
+.atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* The status bar sits *over* the app, and the page scrolls underneath it. With
+   nothing behind the clock and the signal icons, a headline sliding past them
+   collides with the system glyphs and both become unreadable. This is the one
+   fixed opaque element in the design: void at the top, fading out just below
+   the safe area so it reads as depth rather than a bar. */
+.status-scrim {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  height: calc(var(--safe-top) + 14px);
+  z-index: 30;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--color-void) 0%,
+    rgba(6, 4, 11, 0.92) 48%,
+    rgba(6, 4, 11, 0.55) 78%,
+    transparent 100%
+  );
 }
 
 /* Safari gives date and time inputs a wide intrinsic width and refuses to
@@ -84,6 +219,13 @@ input[type="time"] {
 input[type="date"]::-webkit-date-and-time-value,
 input[type="time"]::-webkit-date-and-time-value {
   text-align: left;
+}
+
+/* Safari paints the native date/time picker glyph in near-black, which is
+   invisible on obsidian. Inverting it is the only hook we get. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.55);
 }
 
 /* Reset default block margins so spacing comes from layout utilities only.
@@ -110,15 +252,39 @@ input[type="time"]::-webkit-date-and-time-value {
   ol {
     list-style: none;
   }
+
+  /* Selection in brand colour rather than the OS default blue. */
+  ::selection {
+    background: rgba(255, 45, 135, 0.3);
+    color: var(--color-pearl);
+  }
 }
 
-/* Bodoni is a high-contrast display face: hero headlines and big numerals only.
-   Everything structural is Futura so it stays crisp at phone sizes. */
+/* ─────────────────────────────────────────────────────────────────────────
+   TYPE
+   Playfair is the editorial voice — high-contrast and playful, with ball
+   terminals that keep it warm where Bodoni was severe. Jost
+   is the structural voice — geometric, quiet, never competes. The system
+   only breaks when the two get mixed inside one line, so: Bodoni for
+   headlines and numerals, Jost for everything that explains or labels.
+   ───────────────────────────────────────────────────────────────────────── */
 .display {
   font-family: var(--font-display);
   font-weight: 500;
-  letter-spacing: -0.01em;
-  line-height: 1.08;
+  letter-spacing: -0.015em;
+  line-height: 1.04;
+}
+
+/* The masthead voice: set light so Playfair's hairlines go properly thin, the
+   way a fashion cover sets its title. Headlines only — at body size these
+   strokes disappear on a phone. */
+.display-xl {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  /* Not below 1 — Playfair's descenders are long, and anything tighter slices
+     the tail off a 'y' as soon as the headline wraps to a second line. */
+  line-height: 1;
 }
 
 .numeral {
@@ -126,22 +292,151 @@ input[type="time"]::-webkit-date-and-time-value {
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   line-height: 0.9;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
+/* HUD telemetry: the small caps that label instruments. Wide tracking is
+   what sells it — at 0.2em it reads as a readout, not a heading. */
 .eyebrow {
   font-weight: 600;
   font-size: 0.625rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-mist-500);
+  color: var(--color-ash);
 }
 
+/* Backlit text — the stained-glass effect applied to a headline. Costs a
+   paint layer, so one per screen at most. */
+.lit {
+  background: linear-gradient(103deg, var(--color-gloss-bright) 0%, var(--color-gloss) 42%, var(--color-plasma) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* The clip box follows the line box, so descenders need the room too. */
+  padding-bottom: 0.06em;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SURFACES
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* The panel. Not a card sitting on a background — a pane of smoked glass with
+   the atmosphere showing through it, lit along its top edge. */
 .card {
-  background-color: #fff;
-  border: 1px solid var(--color-mist-200);
+  position: relative;
+  background:
+    linear-gradient(177deg, rgba(39, 28, 66, 0.72) 0%, rgba(12, 8, 22, 0.78) 100%);
+  border: 1px solid var(--color-veil);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* The specular: a hairline of light across the top edge, brightest in the
+   middle and fading at the corners, as if a source sat above the panel.
+   This single line is what makes the surface read as glass rather than fill. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset-inline: 1px;
+  top: 0;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(239, 230, 255, 0.28) 28%,
+    rgba(255, 122, 184, 0.42) 50%,
+    rgba(239, 230, 255, 0.28) 72%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* The one panel per screen that carries the brand — the cycle, the hero
+   reading. Gloss in the border and a bloom beneath it. */
+.card-lit {
+  border-color: rgba(255, 45, 135, 0.3);
+  box-shadow:
+    0 1px 0 rgba(255, 122, 184, 0.12) inset,
+    0 24px 60px -34px rgba(0, 0, 0, 0.95),
+    0 0 60px -26px rgba(255, 45, 135, 0.55);
+}
+
+/* Gold tracery — the rhinestone micro-accent. A 1px gilt line, used to set
+   apart something genuinely earned (a streak, a milestone), never as trim. */
+.gilt-hair {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(227, 184, 115, 0.15) 15%,
+    var(--color-gilt) 50%,
+    rgba(227, 184, 115, 0.15) 85%,
+    transparent
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   HUD
+   Razor-thin telemetry lines. The rule is drawn with a repeating gradient so
+   it carries tick marks — an instrument scale, not a divider.
+   ───────────────────────────────────────────────────────────────────────── */
+.hud-rule {
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-veil-strong) 0 10px,
+    transparent 10px 14px
+  );
+}
+
+/* A filled telemetry track — progress, macros, anything measured. */
+.hud-track {
+  background: var(--color-slate);
+  box-shadow: 0 0 0 1px rgba(56, 41, 79, 0.6) inset;
+}
+
+.hud-fill {
+  background: linear-gradient(90deg, var(--color-plasma) 0%, var(--color-gloss) 100%);
+  box-shadow: 0 0 12px -2px rgba(255, 45, 135, 0.7);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   CONTROLS
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* The one true call to action — Opal's gradient pill. Its ::after is a
+   held-back sheen that only appears on press, so the control feels wet. */
+.btn-gloss {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(104deg, #E01C77 0%, #C9187A 48%, var(--color-plasma) 100%);
+  color: #fff;
+  box-shadow: var(--shadow-gloss);
+}
+
+.btn-gloss::before {
+  content: "";
+  position: absolute;
+  inset-inline: 10%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  pointer-events: none;
+}
+
+.btn-gloss:active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(104deg, rgba(255, 255, 255, 0.16), transparent 60%);
+  pointer-events: none;
+}
+
+.btn-gloss:disabled {
+  box-shadow: none;
 }
 
 button {
@@ -153,6 +448,20 @@ input,
 select,
 textarea {
   font-family: inherit;
+  color: var(--color-pearl);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-dusk);
+}
+
+/* Keyboard focus has to survive on obsidian, where a default outline is
+   nearly invisible. Gloss ring, and only for keyboard users. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-gloss);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Hide scrollbars on horizontal rails without losing scroll */
@@ -165,7 +474,7 @@ textarea {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, var(--color-mist-100) 25%, var(--color-mist-200) 37%, var(--color-mist-100) 63%);
+  background: linear-gradient(90deg, var(--color-onyx) 25%, var(--color-quartz) 37%, var(--color-onyx) 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
@@ -175,8 +484,20 @@ textarea {
   to { background-position: 0 50%; }
 }
 
+/* The slow breath under the cycle orb. Long and shallow on purpose — it
+   should read as alive, never as a loading state. */
+@keyframes bloom {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.32; transform: scale(1.06); }
+}
+
+.bloom {
+  animation: bloom 6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skeleton { animation: none; }
+  .bloom { animation: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;

@@ -1,12 +1,20 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import { motion } from "motion/react";
+import AnimatedNumber from "@/components/AnimatedNumber";
+import Confetti from "@/components/Confetti";
 import { Button, Chip, Eyebrow, Sheet } from "@/components/ui";
 import { pop } from "@/lib/motion";
 import { MOODS, SYMPTOMS } from "@/data/content";
+import { computeStreak } from "@/lib/progress";
 import { useStore } from "@/lib/store";
-import { today } from "@/lib/date";
+import { shortDate, today } from "@/lib/date";
 import type { BleedLevel, DayLog, SymptomId } from "@/types";
+
+/** Logs needed before Patterns has enough to draw a trend. Matches the
+ *  `first_pattern` achievement in lib/progress, so the promise made here and
+ *  the badge granted there can't drift apart. */
+const PATTERN_THRESHOLD = 14;
 
 const BLEED: { id: BleedLevel; label: string }[] = [
   { id: "none", label: "None" },
@@ -28,8 +36,21 @@ export default function LogSheet({
   onClose: () => void;
   date?: string;
 }) {
+  const isToday = date === today();
+  return (
+    <Sheet open={open} onClose={onClose} label={isToday ? "Today's check-in" : `Check-in · ${shortDate(date)}`}>
+      {/* The form lives inside the sheet so it unmounts on close. Holding this
+          state a level up left the save confirmation frozen on screen the next
+          time the sheet opened, and kept a stale draft when the date changed. */}
+      <LogForm date={date} onClose={onClose} />
+    </Sheet>
+  );
+}
+
+function LogForm({ date, onClose }: { date: string; onClose: () => void }) {
   const { state, saveLog } = useStore();
   const existing = state.logs.find((l) => l.date === date);
+  const isToday = date === today();
 
   const [draft, setDraft] = useState<DayLog>(
     existing ?? { date, bleeding: "none", symptoms: {}, loggedAt: new Date().toISOString() },
@@ -50,56 +71,91 @@ export default function LogSheet({
   };
 
   const [saved, setSaved] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   const save = () => {
     saveLog({ ...draft, loggedAt: new Date().toISOString() });
-    // Hold the confirmation on screen for a beat so it registers as done.
+    // Long enough to read a streak number and a line of text, and to let the
+    // confetti land. The old 850ms was tuned for a bare checkmark.
     setSaved(true);
-    setTimeout(onClose, 850);
+    closeTimer.current = setTimeout(onClose, 2600);
   };
 
+  // Counted with this entry included. Reading state.logs alone would show the
+  // streak as it was a moment before saving — off by one on the very day the
+  // number is being celebrated.
+  const { streak, logCount } = useMemo(() => {
+    const logs = state.logs.some((l) => l.date === date) ? state.logs : [...state.logs, { ...draft, date }];
+    return { streak: computeStreak(logs).current, logCount: logs.length };
+  }, [state.logs, date, draft]);
+
+  // Every symptom is on screen, no disclosure. Hiding two thirds of the list
+  // behind "Something else" meant a symptom you have but didn't pick at
+  // onboarding went unlogged — and an unlogged symptom is a hole in the
+  // pattern. The ones you said you track come first, so the common taps stay
+  // nearest the top; the rest follow in the same grid.
   const tracked = state.profile.baselineSymptoms.length
     ? SYMPTOMS.filter((s) => state.profile.baselineSymptoms.includes(s.id))
     : SYMPTOMS;
   const others = SYMPTOMS.filter((s) => !tracked.includes(s));
+  const allSymptoms = [...tracked, ...others];
 
   if (saved) {
     return (
-      <Sheet open={open} onClose={onClose} label="Saved">
-        <div className="flex flex-col items-center py-12 text-center">
-          <motion.span
-            initial={{ scale: 0.3, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={pop}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-tangerine text-white"
-          >
-            <Check className="h-7 w-7" strokeWidth={2.6} />
-          </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-            className="display mt-4 text-[26px] text-tangerine"
-          >
-            Logged.
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-1.5 text-[13.5px] text-mist-500"
-          >
-            That's another day of the picture.
-          </motion.p>
-        </div>
-      </Sheet>
+      <div className="relative flex flex-col items-center py-10 text-center">
+        <Confetti />
+
+        <motion.span
+          initial={{ scale: 0.3, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={pop}
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-gloss text-void"
+        >
+          <Check className="h-7 w-7" strokeWidth={2.6} />
+        </motion.span>
+
+        <motion.h2
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+          className="display mt-4 text-[27px] text-pearl"
+        >
+          Logged.
+        </motion.h2>
+
+        {/* The streak is the reason to come back tomorrow, so it gets the
+            weight on this screen — bigger than the heading above it. */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-5 flex flex-col items-center"
+        >
+          <AnimatedNumber value={streak} className="numeral text-[56px] leading-none text-gloss-bright lit" />
+          <span className="mt-1 text-[12px] uppercase tracking-[0.18em] text-ash">
+            {streak === 1 ? "day in a row" : "days in a row"}
+          </span>
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-4 max-w-[17rem] text-[13.5px] leading-[1.5] text-silk"
+        >
+          {encouragement(streak, logCount)}
+        </motion.p>
+      </div>
     );
   }
 
   return (
-    <Sheet open={open} onClose={onClose} label="Today's check-in">
-      <h2 className="display text-[28px] text-tangerine">How's today going?</h2>
-      <p className="mt-1.5 text-[13.5px] text-mist-500">
+    <>
+      <h2 className="display text-[29px] text-pearl">
+        {isToday ? "Log today." : `Log ${shortDate(date)}.`}
+      </h2>
+      <p className="mt-1.5 text-[13.5px] text-ash">
         Log what you notice. Anything you skip just stays empty — there's no streak penalty for a short entry.
       </p>
 
@@ -118,25 +174,10 @@ export default function LogSheet({
         <section>
           <Eyebrow>Symptoms — tap again for stronger</Eyebrow>
           <div className="mt-2 flex flex-wrap gap-2">
-            {tracked.map((s) => (
+            {allSymptoms.map((s) => (
               <SymptomChip key={s.id} label={s.label} level={draft.symptoms[s.id] ?? 0} onClick={() => cycleSymptom(s.id)} />
             ))}
           </div>
-          {others.length ? (
-            <details className="mt-3">
-              <summary className="cursor-pointer text-[13px] font-medium text-blue">Something else</summary>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {others.map((s) => (
-                  <SymptomChip
-                    key={s.id}
-                    label={s.label}
-                    level={draft.symptoms[s.id] ?? 0}
-                    onClick={() => cycleSymptom(s.id)}
-                  />
-                ))}
-              </div>
-            </details>
-          ) : null}
         </section>
 
         <section>
@@ -170,11 +211,11 @@ export default function LogSheet({
               step={0.5}
               value={draft.sleepHours ?? 7.5}
               onChange={(e) => set("sleepHours", Number(e.target.value))}
-              className="h-1 flex-1 accent-[#F2701C]"
+              className="h-1 flex-1 accent-[#FF2D87]"
               aria-label="Hours of sleep"
             />
-            <span className="numeral w-16 text-right text-[24px] text-ink">{draft.sleepHours ?? 7.5}</span>
-            <span className="text-[12px] text-mist-500">hrs</span>
+            <span className="numeral w-16 text-right text-[24px] text-pearl">{draft.sleepHours ?? 7.5}</span>
+            <span className="text-[12px] text-ash">hrs</span>
           </div>
         </section>
 
@@ -195,17 +236,35 @@ export default function LogSheet({
             value={draft.notes ?? ""}
             onChange={(e) => set("notes", e.target.value)}
             rows={3}
-            placeholder="Anything worth remembering about today"
-            className="mt-2 w-full resize-none rounded-2xl border border-mist-200 bg-white px-4 py-3 text-[14px] outline-none focus:border-tangerine"
+            placeholder="Note anything worth remembering"
+            className="mt-2 w-full resize-none rounded-2xl border border-veil bg-slate px-4 py-3 text-[14px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
           />
         </section>
       </div>
 
       <Button full onClick={save} className="mt-7">
-        Save today
+        {isToday ? "Save today" : `Save ${shortDate(date)}`}
       </Button>
-    </Sheet>
+    </>
   );
+}
+
+/**
+ * What to do next, not how to feel about what just happened. The whole point
+ * of the streak is that symptoms only become a pattern when they're marked on
+ * consecutive days, so the copy says that plainly and names the number of days
+ * still to go rather than cheering.
+ */
+function encouragement(streak: number, logCount: number): string {
+  if (logCount >= PATTERN_THRESHOLD) {
+    return "Your patterns are ready. Open Patterns to see what your symptoms move with.";
+  }
+  const left = PATTERN_THRESHOLD - logCount;
+  const days = left === 1 ? "1 more day" : `${left} more days`;
+  if (streak <= 1) {
+    return `Mark your symptoms again tomorrow. Patterns build from consecutive days — ${days} and yours start to show.`;
+  }
+  return `Keep marking your symptoms every day. ${days} and Ease can show you your first pattern.`;
 }
 
 function SymptomChip({ label, level, onClick }: { label: string; level: number; onClick: () => void }) {
@@ -220,8 +279,8 @@ function SymptomChip({ label, level, onClick }: { label: string; level: number; 
       transition={{ duration: 0.28 }}
       className={`min-h-[44px] rounded-full border px-4 text-[14px] transition-colors ${
         active
-          ? "border-tangerine bg-tangerine-wash font-semibold text-tangerine-deep"
-          : "border-mist-200 bg-white text-mist-600 hover:border-mist-300"
+          ? "border-gloss bg-gloss-veil font-semibold text-gloss-bright"
+          : "border-veil bg-slate text-silk hover:border-gloss/50"
       }`}
     >
       {label}
@@ -252,15 +311,15 @@ function Scale({
             aria-label={`${n} out of 5`}
             className={`h-11 flex-1 rounded-xl border text-[14px] font-semibold transition-colors ${
               value === n
-                ? "border-tangerine bg-tangerine text-white"
-                : "border-mist-200 bg-white text-mist-500 hover:border-mist-300"
+                ? "border-gloss bg-gloss text-void"
+                : "border-veil bg-slate text-ash hover:border-gloss/50"
             }`}
           >
             {n}
           </button>
         ))}
       </div>
-      <div className="mt-1.5 flex justify-between text-[11px] text-mist-400">
+      <div className="mt-1.5 flex justify-between text-[11px] text-dusk">
         <span>{low}</span>
         <span>{high}</span>
       </div>

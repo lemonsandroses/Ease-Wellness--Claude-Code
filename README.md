@@ -68,6 +68,57 @@ npx cap open android            # Android Studio
 
 `npx cap sync` must be re-run after every web change — the native projects bundle a copy of `dist/`, they don't read it live.
 
+### Sign in with Google and Apple
+
+Both run natively on a phone: the provider's own sheet returns an OIDC id token
+and that is exchanged with Supabase via `signInWithIdToken`. The browser
+redirect flow can't be used inside the app, because the origin there is
+`capacitor://localhost` and no provider accepts it as a redirect target. See
+`src/lib/socialAuth.ts`.
+
+A button only appears once its provider is configured, so a half-finished setup
+hides the button instead of failing when someone taps it. **Google is also
+hidden while Apple is unconfigured** — offering third-party sign-in without
+Sign in with Apple is an automatic rejection under App Store guideline 4.8.
+
+**Apple.** In the developer portal enable the Sign In with Apple capability on
+the `app.easetracker` App ID, then create a Service ID and a sign-in key
+(.p8). Put the Service ID, Team ID, Key ID and key contents into Supabase →
+Authentication → Providers → Apple. iOS needs nothing in `.env` — it signs in
+against the bundle id. The `com.apple.developer.applesignin` entitlement is
+already committed at `ios/App/App/App.entitlements`.
+
+**Google.** In Google Cloud create an OAuth consent screen and two clients: an
+**iOS** client (bundle id `app.easetracker`) and a **Web** client. Then:
+
+- `VITE_GOOGLE_IOS_CLIENT_ID` = the iOS client id
+- `VITE_GOOGLE_WEB_CLIENT_ID` = the web client id
+- Supabase → Authentication → Providers → Google: the **web** client id and secret
+- `ios/App/App/Info.plist` needs a `CFBundleURLTypes` entry whose scheme is the
+  iOS client id **reversed** (`com.googleusercontent.apps.123-abc`), or the
+  sign-in sheet has no way back into the app
+
+Android additionally needs the SHA-1 of the signing certificate registered on an
+Android OAuth client.
+
+### Staying up when the backend isn't
+
+The app is local-first and every path assumes the network may be slow, rate
+limited or gone:
+
+- The first paint waits at most five seconds for the session check, then opens
+  on cached data regardless (`store.tsx`). A struggling backend delays syncing,
+  never access.
+- Writes queue locally and replay with exponential backoff **and jitter**, so a
+  shared blip doesn't turn every phone into a synchronised retry spike.
+- Requests the server has definitively refused (constraint violations, RLS) are
+  dropped rather than retried forever, so one bad row can't wedge the queue.
+- Regaining signal or returning to the foreground resets the backoff and retries
+  at once.
+- The session is read from a single `onAuthStateChange` subscription, and token
+  refreshes don't re-pull the tables — both of which used to double the reads on
+  every launch.
+
 ## Project layout
 
 ```
@@ -94,6 +145,6 @@ This app holds reproductive health data, which is special-category under GDPR an
 
 ## Known gaps
 
-- Payments are not wired yet — the paywall records intent only. Next step is RevenueCat with StoreKit and Play Billing.
+- There is no paywall and no in-app purchase. Every feature is free, the RevenueCat SDK has been removed, and nothing in the binary links StoreKit or Play Billing.
 - Google Calendar needs a Google Cloud OAuth client before the connect button works.
 - Font licences: Futura PT and any display face must be properly licensed before release. The files used in development are not licensed for production.

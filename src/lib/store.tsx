@@ -13,6 +13,8 @@ import { emptyProfile, emptyState } from "./defaults";
 import { supabase, isConfigured } from "./supabase";
 import * as remote from "./remote";
 import { today } from "./date";
+import { qualifyingAchievements } from "./progress";
+import { signOutProviders } from "./socialAuth";
 
 const KEY = "ease.state.v1";
 
@@ -30,11 +32,27 @@ type Pending =
   | { kind: "event-delete"; id: string }
   | { kind: "achievement"; id: string };
 
+/**
+ * True when retrying is pointless: the server understood the request and
+ * refused it. Postgres answers with a SQLSTATE — class 22 is bad data, class 23
+ * a constraint violation, 42501 a row-level-security refusal — and all of those
+ * will fail identically forever. A dropped connection or a 5xx carries no such
+ * code, and those are worth retrying.
+ */
+function permanent(err: unknown): boolean {
+  const code = (err as { code?: unknown } | null)?.code;
+  return typeof code === "string" && (/^(22|23)/.test(code) || code === "42501");
+}
+
 function read(): AppState {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return emptyState;
-    return { ...emptyState, ...JSON.parse(raw) };
+    const saved = JSON.parse(raw) as Partial<AppState>;
+    // The profile is merged field by field, not swapped wholesale: a cache
+    // written by an older build is missing anything added since, and code that
+    // reads e.g. profile.focus.length would throw on an existing install.
+    return { ...emptyState, ...saved, profile: { ...emptyProfile, ...saved.profile } };
   } catch {
     return emptyState;
   }
@@ -73,6 +91,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const userId = useRef<string | null>(null);
   const pending = useRef<Pending[]>([]);
   const flushing = useRef(false);
+  /** Consecutive failed flushes — drives the retry backoff. */
+  const attempt = useRef(0);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const latest = useRef(state);
 
   latest.current = state;
@@ -110,8 +131,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (op.kind === "achievement") {
           await remote.pushAchievement(op.id, s.achievements[op.id] ?? today(), uid);
         }
-      } catch {
-        failed.push(op);
+      } catch (err) {
+        if (permanent(err)) {
+          // The row will be rejected identically every time, so requeueing it
+          // would hold the whole queue at the back-off ceiling forever and keep
+          // every later write from ever landing. Drop it and say so — the data
+          // is still on the device, it just won't reach the server as-is.
+          console.error(`Dropping a ${op.kind} write the server will never accept`, err);
+        } else {
+          failed.push(op);
+        }
       }
     }
 
@@ -119,8 +148,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     flushing.current = false;
     setStatus(pending.current.length ? "offline" : "synced");
 
-    // Anything enqueued while this run was in flight still needs sending.
-    if (pending.current.length && !failed.length) void flush();
+    if (!failed.length) {
+      attempt.current = 0;
+      // Anything enqueued while this run was in flight still needs sending.
+      if (pending.current.length) void flush();
+      return;
+    }
+
+    // Something rejected the write — a rate limit, a 5xx, a dropped connection
+    // during a busy spell. Retrying only on the next "online" event or the
+    // user's next edit could strand a day's logging for hours, so back off and
+    // come back: ~2s, 4s, 8s … capped at a minute.
+    //
+    // The jitter matters more than the delay. Without it every phone that hit
+    // the same blip retries on the same schedule for the rest of the session,
+    // which is how a brief wobble turns into a repeating self-inflicted spike.
+    const wait = Math.min(2000 * 2 ** attempt.current, 60_000);
+    attempt.current += 1;
+    clearTimeout(retryTimer.current);
+    retryTimer.current = setTimeout(() => void flush(), wait * (0.5 + Math.random()));
   }, []);
 
   const enqueue = useCallback(
@@ -177,36 +223,81 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!supabase) return;
 
-    supabase.auth.getSession().then(({ data }) => {
-      const session = data.session;
+    // Nothing the server does may keep someone out of their own app. If the
+    // session check hasn't settled in five seconds — a slow network, a busy
+    // hour, an outage — open on the cached data and let the sync catch up.
+    const openAnyway = setTimeout(() => setReady(true), 5000);
+
+    // onAuthStateChange fires INITIAL_SESSION on subscribe, so this is the only
+    // place the session is read. Calling getSession() as well would hydrate
+    // every account twice on every launch — double the reads, for nothing.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       userId.current = session?.user.id ?? null;
       setState((s) => ({ ...s, session: session ? { email: session.user.email ?? "", id: session.user.id } : null }));
-      if (session) void hydrate(session.user.id);
-      else {
+
+      // A token refresh is not a new sign-in; re-pulling every table on each
+      // one would multiply load for no new data.
+      if (session && event !== "TOKEN_REFRESHED") {
+        void hydrate(session.user.id);
+      } else if (session) {
+        void flush();
+      } else {
         setStatus("local");
         setReady(true);
       }
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      userId.current = session?.user.id ?? null;
-      setState((s) => ({ ...s, session: session ? { email: session.user.email ?? "", id: session.user.id } : null }));
-      if (session) void hydrate(session.user.id);
-      else {
-        setStatus("local");
-        setReady(true);
-      }
-    });
+    return () => {
+      clearTimeout(openAnyway);
+      sub.subscription.unsubscribe();
+    };
+  }, [hydrate, flush]);
 
-    return () => sub.subscription.unsubscribe();
-  }, [hydrate]);
-
-  // Retry queued writes when the browser comes back online.
+  /**
+   * Retry queued writes when conditions plainly changed.
+   *
+   * Both events reset the backoff, because a phone that has just regained
+   * signal or come back to the foreground shouldn't sit out the rest of a
+   * minute-long wait it earned while it was away. `visibilitychange` carries
+   * most of this on mobile — a backgrounded app gets frozen, not an "offline".
+   */
   useEffect(() => {
-    const onOnline = () => void flush();
-    window.addEventListener("online", onOnline);
-    return () => window.removeEventListener("online", onOnline);
+    const retryNow = () => {
+      attempt.current = 0;
+      clearTimeout(retryTimer.current);
+      void flush();
+    };
+    const onVisible = () => {
+      if (!document.hidden) retryNow();
+    };
+    window.addEventListener("online", retryNow);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("online", retryNow);
+      document.removeEventListener("visibilitychange", onVisible);
+      clearTimeout(retryTimer.current);
+    };
   }, [flush]);
+
+  /**
+   * Stamp the date each badge was first earned.
+   *
+   * Qualification is recomputed from the raw logs on every render, so without
+   * this the moment is never recorded: every badge reads a bare "Earned", and
+   * the achievements table stays empty. Runs here rather than on the Patterns
+   * screen so a badge earned while logging on Home is still dated correctly.
+   */
+  useEffect(() => {
+    const missing = [...qualifyingAchievements(state)].filter((id) => !state.achievements[id]);
+    if (!missing.length) return;
+    const stamp = today();
+    setState((s) => {
+      const achievements = { ...s.achievements };
+      for (const id of missing) achievements[id] ??= stamp;
+      return { ...s, achievements };
+    });
+    for (const id of missing) enqueue({ kind: "achievement", id });
+  }, [state, enqueue]);
 
   const saveProfile = useCallback(
     (patch: Partial<Profile>) => {
@@ -273,13 +364,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    // Clear the Google/Apple session too, or the next sign-in silently reuses
+    // the same account with no picker — surprising on a shared phone.
+    await signOutProviders().catch(() => {});
     await supabase?.auth.signOut();
     userId.current = null;
     pending.current = [];
     // Clear the cache on sign-out: this is health data on a possibly shared device.
     localStorage.removeItem(KEY);
     setState(emptyState);
-    setStatus(isConfigured ? "local" : "local");
+    setStatus("local");
   }, []);
 
   /**
@@ -290,6 +384,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const eraseEverything = useCallback(async () => {
     if (userId.current) await remote.deleteAccount();
     pending.current = [];
+    await signOutProviders().catch(() => {});
     await supabase?.auth.signOut();
     userId.current = null;
     localStorage.removeItem(KEY);

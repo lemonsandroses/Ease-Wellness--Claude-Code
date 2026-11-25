@@ -1,0 +1,151 @@
+Legal
+
+Terms of Use
+
+Last updated 29 October 2026 · Applies to Ease for iOS and Android
+
+In short. Ease helps you track and understand your cycle. It is not a doctor, it cannot diagnose anything, and it must never be used as contraception or to plan a pregnancy.
+
+Premium renews automatically until you cancel, which you do in your App Store or Google Play settings — not in Ease. Your logs remain yours and you can delete them at any time.
+
+These terms govern your use of the Ease mobile app and this website. By creating an account or using Ease, you agree to them. If you do not agree, please do not use Ease.
+
+>>> FILL THIS IN BEFORE PUBLISHING <<<
+    To be completed before publication
+    Registered legal name: ______________________
+    Registered address: ______________________
+    CIN: ______________________
+
+1. Ease is not medical care
+
+This is the most important section here. Please read it properly.
+
+Ease is a wellness and tracking tool. It is not a medical device, and it does not provide medical advice, diagnosis or treatment.
+
+• Nothing in Ease is a diagnosis. In particular, Ease does not diagnose PCOS, endometriosis, thyroid conditions or anything else — and no app can. Only a qualified clinician can.
+• The nutrition, exercise, sleep and stress guidance in Ease is general educational information. It is not a prescription, not a treatment plan, and not tailored to your medical history, your medication or your diagnoses.
+• The patterns Ease shows you are observations about what you recorded. They are a starting point for a conversation with a doctor, not a finding to act on by yourself.
+• Always consult a qualified healthcare professional before changing your diet, exercise, supplements or medication, and about any symptom that worries you. Never disregard or delay professional medical advice because of something you read in Ease.
+
+Ease is not contraception
+Ease must not be used to prevent or to achieve pregnancy.
+
+The cycle predictions in Ease are estimates calculated from the dates you log. They are frequently imprecise, and they are least reliable in exactly the circumstances many of our users have — irregular cycles, PCOS, perimenopause, recently stopping hormonal contraception, illness, or significant stress.
+
+Ease does not detect ovulation. Where the app shows an "ovulatory" phase, that is an estimate derived from your logged dates, not a measurement. Please speak to a healthcare professional about contraception and about trying to conceive.
+
+In an emergency, contact your doctor or emergency services immediately. Ease is not for emergencies and cannot help you in one.
+
+2. Who may use Ease
+
+You must be 18 or over to use Ease. Ease is currently offered in India only.
+
+Indian data protection law treats everyone under 18 as a child and requires verifiable consent from a parent or guardian before their personal data may be processed. Health data deserves a higher standard than we can currently meet, so we do not accept accounts from anyone under 18. We ask for your date of birth during onboarding and will not create an account if it shows you are under 18.
+
+By creating an account you confirm that you are 18 or over, that you are resident in India, and that the information you give us is accurate.
+
+3. Your account
+
+You are responsible for keeping your sign-in details confidential and for what happens under your account. Please tell us promptly if you think it has been compromised.
+
+You can delete your account at any time from Settings → Delete my account. That permanently erases your data as described in our Privacy Policy.
+
+4. Subscriptions and payment
+
+Ease is free to use for cycle tracking, the home screen, the calendar, nutrition guidance and basic cycle patterns. Ease Premium unlocks the full body protocol, detailed patterns, trophies and badges, and your own calendar events and tasks.
+
+Pricing
+• Monthly — ₹699 per month
+• Annual — ₹6,999 per year
+Prices are shown in the app and may change with applicable taxes. The price displayed to you at the moment of purchase is the price that applies.
+
+Free trial
+New subscribers may be offered a 7-day free trial. If you do not cancel at least 24 hours before the trial ends, it converts automatically into a paid subscription at the price above.
+
+Automatic renewal
+Your subscription renews automatically. Payment is charged to your Apple or Google account at confirmation of purchase. It renews at the same price each period unless you cancel at least 24 hours before the end of the current period. Your account is charged for the renewal within the 24 hours before the period ends.
+
+Cancelling
+Manage or cancel your subscription in your App Store or Google Play account settings. You cannot cancel inside Ease, and we are not able to cancel on your behalf. Cancelling stops future renewals; you keep premium access until the end of the period you have already paid for.
+
+Refunds
+Purchases are processed by Apple and Google, and refunds are governed by their policies. Please request a refund directly from Apple or Google — we cannot refund a payment we did not process. Nothing here limits any right you have under the Consumer Protection Act, 2019 or other Indian consumer law.
+
+Price changes
+We may change prices. If you are already subscribed we will give you notice before a change takes effect, and the opportunity to cancel before you are charged the new price.
+
+5. Acceptable use
+
+Please do not:
+
+• use Ease unlawfully, or to break any applicable regulation;
+• try to access another user's account or data;
+• probe, scan or attempt to breach the security of the service;
+• reverse engineer, decompile or disassemble the app, except where that right cannot lawfully be restricted;
+• use automated means to access, scrape or overload the service;
+• resell, sublicense or redistribute Ease; or
+• upload content that is unlawful or infringes someone else's rights.
+We may suspend or close accounts that breach this section.
+
+6. Content and intellectual property
+
+Yours stays yours. You keep every right in the logs, notes and other content you enter. You grant us only the limited licence we need to store, process and show it back to you so that the app works. We claim no ownership of it and we will not publish it.
+
+Ours stays ours. The Ease app, its name, logo, design, written guidance and underlying software belong to us and are protected by intellectual property law. These terms give you a personal, non-exclusive, non-transferable, revocable licence to use Ease for your own personal, non-commercial use.
+
+7. Availability
+
+We aim to keep Ease available and accurate, but we do not guarantee it will be uninterrupted or error-free. We may change, suspend or withdraw features. If we discontinue the service entirely, we will give you reasonable notice and a way to export your data.
+
+8. Termination
+
+You may stop using Ease and delete your account at any time. We may suspend or end your access if you materially breach these terms, or where the law requires it. Sections 1, 6, 9, 10, 11 and 12 survive termination.
+
+9. Disclaimer of warranties
+
+To the fullest extent permitted by law, Ease is provided "as is" and "as available", without warranties of any kind, whether express or implied, including merchantability, fitness for a particular purpose and non-infringement. We do not warrant that the app's predictions, calculations or guidance are accurate, complete, or suitable for your circumstances.
+
+Nothing in this section affects rights you have under Indian consumer law that cannot be excluded.
+
+10. Limitation of liability
+
+To the fullest extent permitted by law, we will not be liable for any indirect, incidental, special, consequential or punitive damages, or for any loss of profits, data or goodwill arising from your use of Ease.
+
+Our total aggregate liability for any claim relating to Ease will not exceed the greater of (a) the amount you paid us in the twelve months before the claim arose, or (b) ₹17,000.
+
+Nothing here limits liability that cannot lawfully be limited, including liability for death or personal injury caused by negligence, or for fraud.
+
+11. Indemnity
+
+You agree to indemnify us against claims, losses and reasonable costs arising from your unlawful use of Ease or your material breach of these terms. This does not apply to anything caused by our own act or omission, and nothing in it affects your rights as a consumer.
+
+12. Governing law and disputes
+
+These terms are governed by the laws of India. The courts at Delhi, India have exclusive jurisdiction over any dispute arising out of them.
+
+If you have a complaint, please contact us first — most things are resolved quickly that way. Nothing in this section removes any right you have to approach a consumer forum under Indian consumer law.
+
+13. Apple App Store
+
+These terms are between you and us, not Apple. Apple is not responsible for Ease or its content. Where you obtained Ease from the App Store:
+
+• Apple has no obligation to provide any maintenance or support for Ease.
+• If Ease fails to conform to any applicable warranty, you may notify Apple, and Apple will refund the purchase price. To the maximum extent permitted by law, Apple has no other warranty obligation in respect of Ease.
+• Apple is not responsible for addressing any claim by you or a third party relating to Ease, including product liability claims, claims that Ease fails to meet a legal or regulatory requirement, and claims under consumer protection or similar legislation.
+• Apple is not responsible for investigating, defending, settling or discharging any third-party claim that Ease infringes intellectual property rights.
+• You confirm that you are not located in a country subject to a US Government embargo or designated as "terrorist supporting", and that you are not on any US Government list of prohibited or restricted parties.
+• Apple and its subsidiaries are third-party beneficiaries of these terms and, on your acceptance of them, will have the right to enforce them against you.
+
+14. Changes to these terms
+
+We may update these terms. We will tell you in the app before a material change takes effect. Continuing to use Ease after that means you accept the revised terms.
+
+15. Contact us
+
+>>> FILL THIS IN BEFORE PUBLISHING <<<
+    To be completed before publication
+    Support email: ______________________
+    Privacy email: ______________________
+    Postal address: ______________________
+
+Privacy Policy · Ease — menstrual health, tracked honestly.

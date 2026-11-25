@@ -42,3 +42,23 @@ export function weekdayInitial(key: string): string {
 export function lastNDays(n: number, end = today()): string[] {
   return Array.from({ length: n }, (_, i) => addDays(end, i - (n - 1)));
 }
+
+/**
+ * Whether a date of birth puts someone at 18 or over today.
+ *
+ * India's DPDP Act treats every Data Principal under 18 as a Child, requiring
+ * verifiable parental consent before any processing. Ease has no way to obtain
+ * that, so 18 is the floor rather than a preference.
+ */
+export function isAdult(birthDate: string | undefined, now = today()): boolean {
+  if (!birthDate) return false;
+  const born = fromKey(birthDate);
+  const asOf = fromKey(now);
+  if (Number.isNaN(born.getTime()) || born > asOf) return false;
+  let age = asOf.getFullYear() - born.getFullYear();
+  const beforeBirthday =
+    asOf.getMonth() < born.getMonth() ||
+    (asOf.getMonth() === born.getMonth() && asOf.getDate() < born.getDate());
+  if (beforeBirthday) age -= 1;
+  return age >= 18;
+}

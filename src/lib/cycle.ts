@@ -51,16 +51,26 @@ export function computeCycleState(profile: Profile, logs: DayLog[], now = today(
   const variance = lengths.length >= 2 ? stdev(lengths) : undefined;
 
   const anchor = starts.length ? starts[starts.length - 1] : profile.lastPeriodStart;
-  const cycleLength = observedLength ?? profile.cycleLength;
-  const periodLength = profile.periodLength;
+  // A zero or missing length would make the modulo below NaN and put "Day NaN"
+  // on the home screen. Values reach here from storage and from the server, so
+  // the floor belongs here rather than only at the inputs that set them.
+  const clamp = (n: number | undefined, lo: number, hi: number, fallback: number) =>
+    Number.isFinite(n) && (n as number) > 0 ? Math.min(Math.max(n as number, lo), hi) : fallback;
+  const cycleLength = clamp(observedLength ?? profile.cycleLength, 15, 90, 28);
+  const periodLength = clamp(profile.periodLength, 1, 15, 5);
 
   if (!anchor) {
-    return { known: false, day: 0, phase: "follicular", estimated: true, cycleCount: 0 };
+    return { known: false, day: 0, phase: "follicular", estimated: true, overdue: false, cycleCount: 0 };
   }
 
   const elapsed = daysBetween(anchor, now);
-  const day = ((elapsed % cycleLength) + cycleLength) % cycleLength || cycleLength;
   const overdue = elapsed >= cycleLength;
+
+  // The first day of bleeding is day 1, not day 0. Past the expected date the
+  // count deliberately keeps climbing instead of wrapping: a 45-day cycle is an
+  // ordinary PCOS month, and restarting at day 1 would bury the one signal this
+  // app exists to surface.
+  const day = Math.max(elapsed, 0) + 1;
 
   // Sparse history, or cycles that swing by more than ~5 days, mean we present
   // the phase as an estimate rather than a precise day.
@@ -70,13 +80,15 @@ export function computeCycleState(profile: Profile, logs: DayLog[], now = today(
 
   return {
     known: true,
-    day: elapsed >= 0 ? day : 1,
+    day,
     phase: phaseForDay(day, cycleLength, periodLength),
     estimated,
     observedLength,
     variance,
     nextPeriodDate,
     daysUntilNext: daysBetween(now, nextPeriodDate),
+    overdue,
+    daysLate: overdue ? elapsed - cycleLength : undefined,
     cycleCount: starts.length,
   };
 }

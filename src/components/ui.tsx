@@ -7,15 +7,24 @@ export function Eyebrow({ children }: { children: ReactNode }) {
   return <p className="eyebrow">{children}</p>;
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`card p-5 ${className}`}>{children}</section>;
+export function Card({
+  children,
+  className = "",
+  lit,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** The one panel per screen that carries the brand — gloss edge and bloom. */
+  lit?: boolean;
+}) {
+  return <section className={`card ${lit ? "card-lit" : ""} p-5 ${className}`}>{children}</section>;
 }
 
 export function SectionTitle({ eyebrow, title }: { eyebrow?: string; title: string }) {
   return (
     <header className="mb-3">
       {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
-      <h2 className="display mt-1 text-[26px] text-tangerine">{title}</h2>
+      <h2 className="display mt-1 text-[27px] text-pearl">{title}</h2>
     </header>
   );
 }
@@ -40,11 +49,11 @@ export function Button({
   className = "",
 }: ButtonProps) {
   const base =
-    "inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full px-6 text-[15px] font-semibold transition-colors disabled:opacity-40";
+    "inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full px-6 text-[15px] font-semibold tracking-[0.01em] transition-colors disabled:opacity-40";
   const styles = {
-    primary: "bg-tangerine text-white hover:bg-[#DB6316]",
-    secondary: "border border-mist-300 bg-white text-ink hover:border-ink",
-    ghost: "text-mist-600 hover:text-ink",
+    primary: "btn-gloss",
+    secondary: "border border-veil-strong bg-slate/70 text-pearl backdrop-blur-sm hover:border-gloss",
+    ghost: "text-ash hover:text-pearl",
   }[variant];
   return (
     <motion.button
@@ -79,8 +88,8 @@ export function Chip({
       transition={snap}
       className={`min-h-[44px] rounded-full border px-4 text-[14px] transition-colors ${
         selected
-          ? "border-tangerine bg-tangerine-wash font-semibold text-tangerine-deep"
-          : "border-mist-200 bg-white text-mist-600 hover:border-mist-300"
+          ? "border-gloss/70 bg-gloss-veil font-semibold text-gloss-bright shadow-[0_0_18px_-6px_rgba(255,45,135,0.6)]"
+          : "border-veil bg-slate/60 text-silk hover:border-gloss/50 hover:text-pearl"
       }`}
     >
       {children}
@@ -90,10 +99,10 @@ export function Chip({
 
 export function EmptyState({ title, body, icon }: { title: string; body: string; icon?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-dashed border-mist-200 px-5 py-8 text-center">
-      {icon ? <div className="text-mist-300">{icon}</div> : null}
-      <p className="text-[15px] font-semibold text-ink">{title}</p>
-      <p className="max-w-[36ch] text-[13px] leading-relaxed text-mist-500">{body}</p>
+    <div className="flex flex-col items-center gap-2 rounded-[var(--radius-card)] border border-dashed border-veil-strong bg-void/30 px-5 py-8 text-center">
+      {icon ? <div className="text-dusk">{icon}</div> : null}
+      <p className="text-[14.5px] font-semibold text-silk">{title}</p>
+      <p className="max-w-[34ch] text-[12.5px] leading-relaxed text-ash">{body}</p>
     </div>
   );
 }
@@ -113,7 +122,7 @@ export function Sheet({
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/35 backdrop-blur-[2px] sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-void/75 backdrop-blur-[6px] sm:items-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -122,19 +131,21 @@ export function Sheet({
           <motion.div
             role="dialog"
             aria-label={label}
-            className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-[28px] bg-bone p-5 pb-8 sm:rounded-[28px]"
+            className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-[28px] border-t border-veil-strong bg-obsidian/95 p-5 pb-8 shadow-[0_-24px_60px_-20px_rgba(0,0,0,0.9)] backdrop-blur-2xl sm:rounded-[28px] sm:border"
             initial={{ y: "6%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "4%", opacity: 0, transition: { duration: 0.16 } }}
             transition={glide}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Grab handle — the only affordance saying this panel drags away. */}
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-veil-strong sm:hidden" />
             <div className="mb-4 flex items-center justify-between">
               <Eyebrow>{label}</Eyebrow>
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-mist-200 bg-white text-mist-600"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-veil bg-slate text-ash transition-colors hover:border-gloss hover:text-pearl"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -150,9 +161,9 @@ export function Sheet({
 export function Stat({ value, label, unit }: { value: string | number; label: string; unit?: string }) {
   return (
     <div>
-      <p className="numeral text-[40px] text-ink">
+      <p className="numeral text-[42px] text-pearl">
         {value}
-        {unit ? <span className="ml-1 font-sans text-[13px] font-medium text-mist-500">{unit}</span> : null}
+        {unit ? <span className="ml-1 font-sans text-[13px] font-medium text-ash">{unit}</span> : null}
       </p>
       <p className="eyebrow mt-1.5">{label}</p>
     </div>

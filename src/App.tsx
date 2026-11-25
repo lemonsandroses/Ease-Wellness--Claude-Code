@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import NavBar, { type Tab } from "@/components/NavBar";
 import SettingsSheet from "@/components/SettingsSheet";
@@ -16,7 +16,6 @@ const Body = lazy(() => import("@/screens/Body"));
 const Patterns = lazy(() => import("@/screens/Patterns"));
 const Onboarding = lazy(() => import("@/screens/Onboarding"));
 const Auth = lazy(() => import("@/screens/Auth"));
-const Paywall = lazy(() => import("@/screens/Paywall"));
 
 /** Shown only for the instant a lazy chunk is in flight. */
 function ScreenFallback() {
@@ -32,6 +31,17 @@ function ScreenFallback() {
 
 type Stage = "onboarding" | "auth" | "app";
 
+/** The lit space every screen sits in. Fixed, so it never scrolls away. */
+function Atmosphere() {
+  return (
+    <>
+      <div className="atmosphere" aria-hidden />
+      {/* Keeps scrolled content from colliding with the status bar glyphs. */}
+      <div className="status-scrim" aria-hidden />
+    </>
+  );
+}
+
 export default function App() {
   const { state, ready } = useStore();
   const [splashDone, setSplashDone] = useState(false);
@@ -41,26 +51,35 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("home");
   const [pillar, setPillar] = useState<Pillar>("nutrition");
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [paywallOpen, setPaywallOpen] = useState(false);
 
-  if (!splashDone) return <Splash onDone={() => setSplashDone(true)} />;
+  // Each screen is a fresh page, so it starts at the top. Document scroll is
+  // shared across them: without this, signing up lands on Home still scrolled
+  // by however far the keyboard pushed the auth form, tucking the header under
+  // the notch on a new user's very first view.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [tab, override, state.session?.id, splashDone]);
+
+  if (!splashDone)
+    return (
+      <>
+        <Atmosphere />
+        <Splash onDone={() => setSplashDone(true)} />
+      </>
+    );
 
   // Never decide where someone belongs until their profile has loaded once, or
   // a returning user on a new device gets pushed through onboarding again.
   // Only the first load blocks — later re-syncs happen behind the UI.
-  // Deliberately not gated on the billing SDK. If the store is slow or
-  // unreachable the app must still open — entitlement falls back to the
-  // server flag until the store answers.
   if (!ready) {
     return (
-      <div className="flex min-h-[calc(100dvh-var(--safe-top))] items-center justify-center bg-bone">
+      <div className="flex min-h-[calc(100dvh-var(--safe-top))] items-center justify-center">
         <p className="eyebrow">Loading your plan…</p>
       </div>
     );
   }
 
-  // The paywall is no longer a gate. Everyone reaches the app; premium features
-  // ask for an upgrade at the point the user wants them.
+  // Every feature is free. Nothing in the app is gated on payment.
   const derived: Stage = state.session ? "app" : state.profile.onboardedAt ? "auth" : "onboarding";
   const stage = override ?? derived;
   const clear = () => setOverride(null);
@@ -68,6 +87,7 @@ export default function App() {
   if (stage === "onboarding") {
     return (
       <Suspense fallback={<ScreenFallback />}>
+        <Atmosphere />
         <Onboarding onDone={clear} onSignIn={() => setOverride("auth")} />
       </Suspense>
     );
@@ -75,15 +95,15 @@ export default function App() {
   if (stage === "auth") {
     return (
       <Suspense fallback={<ScreenFallback />}>
+        <Atmosphere />
         <Auth onDone={clear} />
       </Suspense>
     );
   }
 
-  const openPaywall = () => setPaywallOpen(true);
-
   return (
-    <div className="min-h-[calc(100dvh-var(--safe-top))] bg-bone">
+    <div className="min-h-[calc(100dvh-var(--safe-top))]">
+      <Atmosphere />
       <AnimatePresence mode="wait" initial={false}>
         <motion.main key={tab} variants={page} initial="hidden" animate="show" exit="exit">
           {tab === "home" ? (
@@ -97,9 +117,9 @@ export default function App() {
             />
           ) : null}
           <Suspense fallback={<ScreenFallback />}>
-            {tab === "calendar" ? <Calendar onUnlock={openPaywall} /> : null}
-            {tab === "body" ? <Body pillar={pillar} onPillar={setPillar} onUnlock={openPaywall} /> : null}
-            {tab === "patterns" ? <Patterns onUnlock={openPaywall} /> : null}
+            {tab === "calendar" ? <Calendar /> : null}
+            {tab === "body" ? <Body pillar={pillar} onPillar={setPillar} /> : null}
+            {tab === "patterns" ? <Patterns /> : null}
           </Suspense>
         </motion.main>
       </AnimatePresence>
@@ -109,28 +129,11 @@ export default function App() {
       <SettingsSheet
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        onUpgrade={openPaywall}
         onSignOut={() => {
           setTab("home");
           setOverride("auth");
         }}
       />
-
-      <AnimatePresence>
-        {paywallOpen ? (
-          <motion.div
-            className="fixed inset-0 z-50 overflow-y-auto bg-bone"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}
-            transition={{ duration: 0.22 }}
-          >
-            <Suspense fallback={<ScreenFallback />}>
-              <Paywall onClose={() => setPaywallOpen(false)} />
-            </Suspense>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
     </div>
   );
 }

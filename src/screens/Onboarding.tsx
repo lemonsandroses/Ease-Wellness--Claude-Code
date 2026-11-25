@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { Button, Chip, Eyebrow } from "@/components/ui";
 import { FOCUS_OPTIONS, SYMPTOMS } from "@/data/content";
 import { useStore } from "@/lib/store";
-import { today } from "@/lib/date";
+import { isAdult, today } from "@/lib/date";
 import type { Pillar, Profile, SymptomId } from "@/types";
 
 const ENERGY_RHYTHMS = [
@@ -66,10 +66,14 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
   const steps = useMemo(
     () => [
       {
-        eyebrow: "About you",
-        title: "Let's start with the basics.",
-        body: "Two details so the app can speak to you, not at you.",
-        valid: draft.name.trim().length > 0,
+        eyebrow: "Step 1 of 5 · About you",
+        title: "Enter two details.",
+        body: "Your name and date of birth. Both stay on your device until you create an account.",
+        // Date of birth is required and gated. The DPDP Act treats everyone
+        // under 18 as a Child, which obliges us to obtain verifiable consent
+        // from a parent before processing anything they log. We have no way to
+        // do that, so the honest answer is not to open the account at all.
+        valid: draft.name.trim().length > 0 && isAdult(draft.birthDate),
         content: (
           <div className="space-y-4">
             <Field label="Your name">
@@ -77,24 +81,31 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
                 value={draft.name}
                 onChange={(e) => set("name", e.target.value)}
                 placeholder="Jasmine"
-                className="w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+                className="w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
               />
             </Field>
             <Field label="Date of birth">
               <input
                 type="date"
+                max={today()}
                 value={draft.birthDate}
                 onChange={(e) => set("birthDate", e.target.value)}
-                className="w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+                className="w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
               />
             </Field>
+            {draft.birthDate && !isAdult(draft.birthDate) ? (
+              <p role="alert" className="text-[13px] leading-relaxed text-alarm">
+                Ease is only available to people aged 18 and over. We're sorry — the rules on handling health data for
+                under-18s are strict, and we would rather turn you away than handle yours badly.
+              </p>
+            ) : null}
           </div>
         ),
       },
       {
-        eyebrow: "Your cycle",
-        title: "When did your last period start?",
-        body: "A rough date is fine. Ease refines this as you log — it never needs you to be exact.",
+        eyebrow: "Step 2 of 5 · Your cycle",
+        title: "Set your last period start date.",
+        body: "An approximate date is enough. Ease refines it as you log, so it never needs to be exact.",
         valid: true,
         content: (
           <div className="space-y-5">
@@ -104,7 +115,7 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
                 max={today()}
                 value={draft.lastPeriodStart}
                 onChange={(e) => set("lastPeriodStart", e.target.value)}
-                className="w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+                className="w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
               />
             </Field>
             <Field label="Usual cycle length">
@@ -115,7 +126,7 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
                   </Chip>
                 ))}
               </div>
-              <p className="mt-2 text-[12px] leading-relaxed text-mist-500">
+              <p className="mt-2 text-[12px] leading-relaxed text-ash">
                 Not sure, or it changes a lot? Pick the closest — irregular cycles are expected here, and Ease adjusts
                 around them.
               </p>
@@ -133,9 +144,9 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
         ),
       },
       {
-        eyebrow: "Your focus",
-        title: "What would you most like to change?",
-        body: "Pick as many as apply. This sets what Ease puts in front of you first.",
+        eyebrow: "Step 3 of 5 · Your focus",
+        title: "Choose what to work on first.",
+        body: "Select as many as apply. This decides what Ease puts in front of you on the home screen.",
         valid: draft.focus.length > 0,
         content: (
           <div className="grid gap-2.5">
@@ -147,14 +158,14 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
                   onClick={() => set("focus", toggle<Pillar>(draft.focus, opt.id))}
                   aria-pressed={selected}
                   className={`flex min-h-[64px] items-center justify-between rounded-2xl border px-4 text-left transition-colors ${
-                    selected ? "border-tangerine bg-tangerine-wash" : "border-mist-200 bg-white hover:border-mist-300"
+                    selected ? "border-gloss bg-gloss-veil" : "border-veil bg-slate hover:border-gloss/50"
                   }`}
                 >
                   <span>
-                    <span className="block text-[15px] font-semibold text-ink">{opt.label}</span>
-                    <span className="block text-[12.5px] text-mist-500">{opt.blurb}</span>
+                    <span className="block text-[15px] font-semibold text-pearl">{opt.label}</span>
+                    <span className="block text-[12.5px] text-ash">{opt.blurb}</span>
                   </span>
-                  {selected ? <Check className="h-4 w-4 shrink-0 text-tangerine" /> : null}
+                  {selected ? <Check className="h-4 w-4 shrink-0 text-gloss" /> : null}
                 </button>
               );
             })}
@@ -162,9 +173,9 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
         ),
       },
       {
-        eyebrow: "Your symptoms",
-        title: "What shows up for you?",
-        body: "These become the things Ease tracks against your cycle, so you can see what actually moves them.",
+        eyebrow: "Step 4 of 5 · Your symptoms",
+        title: "Select the symptoms you get.",
+        body: "Ease tracks each one against your cycle, so you can see what actually moves it.",
         valid: true,
         content: (
           <div className="flex flex-wrap gap-2">
@@ -181,9 +192,9 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
         ),
       },
       {
-        eyebrow: "Your rhythm",
-        title: "How does a normal day feel?",
-        body: "Energy, sleep and movement — so plans match your real capacity.",
+        eyebrow: "Step 5 of 5 · Your rhythm",
+        title: "Describe a normal day.",
+        body: "Energy, sleep and movement. Ease matches the steps it gives you to your real capacity.",
         valid: true,
         content: (
           <div className="space-y-5">
@@ -215,27 +226,27 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
     const focusLabels = FOCUS_OPTIONS.filter((f) => draft.focus.includes(f.id)).map((f) => f.label);
     return (
       <div className="mx-auto flex min-h-[calc(100dvh-var(--safe-top))] w-full max-w-md flex-col px-5 pb-10 pt-14">
-        <Eyebrow>Calibration complete</Eyebrow>
-        <h1 className="display mt-2 text-[38px] text-tangerine">
-          {draft.name ? `${draft.name}, your plan is ready.` : "Your plan is ready."}
+        <Eyebrow>Setup complete</Eyebrow>
+        <h1 className="display-xl lit mt-2 text-[42px]">
+          {draft.name ? `${draft.name}, here is your setup.` : "Here is your setup."}
         </h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-mist-600">
-          Ease has set up your cycle timeline and picked the first things worth changing. Nothing here needs to happen
-          all at once.
+        <p className="mt-3 text-[15px] leading-relaxed text-silk">
+          Your cycle timeline is built and your first focus is set. Work through it one step at a time — none of it
+          has to happen at once.
         </p>
 
-        <div className="card mt-7 divide-y divide-mist-200 p-0">
+        <div className="card mt-7 divide-y divide-veil p-0">
           <SummaryRow label="Cycle" value={`${draft.cycleLength}-day cycle · ${draft.periodLength}-day period`} />
-          <SummaryRow label="Focus" value={focusLabels.join(" · ") || "Whole-body basics"} />
+          <SummaryRow label="Focus" value={focusLabels.join(" · ") || "Start with the basics"} />
           <SummaryRow
             label="Tracking"
             value={
               draft.baselineSymptoms.length
                 ? `${draft.baselineSymptoms.length} symptoms against your cycle`
-                : "Add symptoms any time"
+                : "Add symptoms whenever you log"
             }
           />
-          <SummaryRow label="Movement" value={draft.movementStyle ?? "We'll start gentle"} />
+          <SummaryRow label="Movement" value={draft.movementStyle ?? "Start gentle"} />
         </div>
 
         <div className="mt-auto pt-8">
@@ -253,7 +264,7 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
         {steps.map((_, i) => (
           <span
             key={i}
-            className={`h-[3px] flex-1 rounded-full transition-colors ${i <= step ? "bg-tangerine" : "bg-mist-200"}`}
+            className={`h-[3px] flex-1 rounded-full transition-colors ${i <= step ? "bg-gloss" : "bg-veil"}`}
           />
         ))}
       </div>
@@ -265,8 +276,8 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
         transition={{ duration: 0.25 }}
       >
         <Eyebrow>{current.eyebrow}</Eyebrow>
-        <h1 className="display mt-2 text-[32px] text-tangerine">{current.title}</h1>
-        <p className="mt-2.5 text-[14px] leading-relaxed text-mist-500">{current.body}</p>
+        <h1 className="display-xl lit mt-2 text-[36px]">{current.title}</h1>
+        <p className="mt-2.5 text-[14px] leading-relaxed text-ash">{current.body}</p>
         <div className="mt-7">{current.content}</div>
       </motion.div>
 
@@ -285,9 +296,9 @@ export default function Onboarding({ onDone, onSignIn }: { onDone: () => void; o
         {/* Returning users on a new device land here with no local profile —
             without this they'd have to redo onboarding just to reach sign-in. */}
         {step === 0 ? (
-          <p className="mt-5 text-center text-[13px] text-mist-500">
+          <p className="mt-5 text-center text-[13px] text-ash">
             Already have an account?{" "}
-            <button onClick={onSignIn} className="font-semibold text-blue underline-offset-4 hover:underline">
+            <button onClick={onSignIn} className="font-semibold text-plasma-bright underline-offset-4 hover:underline">
               Sign in
             </button>
           </p>
@@ -316,8 +327,8 @@ function Options({ value, options, onPick }: { value?: string; options: string[]
           aria-pressed={value === opt}
           className={`min-h-[48px] rounded-2xl border px-4 py-3 text-left text-[14.5px] transition-colors ${
             value === opt
-              ? "border-tangerine bg-tangerine-wash font-semibold text-tangerine-deep"
-              : "border-mist-200 bg-white text-mist-600 hover:border-mist-300"
+              ? "border-gloss bg-gloss-veil font-semibold text-gloss-bright"
+              : "border-veil bg-slate text-silk hover:border-gloss/50"
           }`}
         >
           {opt}
@@ -331,7 +342,7 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 px-5 py-4">
       <span className="eyebrow">{label}</span>
-      <span className="text-right text-[14px] font-medium text-ink">{value}</span>
+      <span className="text-right text-[14px] font-medium text-pearl">{value}</span>
     </div>
   );
 }

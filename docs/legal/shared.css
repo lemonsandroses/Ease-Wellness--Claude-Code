@@ -1,0 +1,236 @@
+/* Ease legal pages — shared styling, matching the app's design system.
+   Jost stands in for Futura PT on the web: the Futura licence covers the app
+   bundle, and Jost is the OFL fallback already in the app's font stack. */
+
+:root {
+  --tangerine: #f2701c;
+  --tangerine-deep: #a8480d;
+  --tangerine-wash: #fdf1e8;
+  --blue: #4e6e8e;
+  --blue-wash: #edf1f5;
+  --ink: #14110f;
+  --bone: #fffdfb;
+  --mist-100: #f6f3f0;
+  --mist-200: #e9e4df;
+  --mist-300: #d3ccc5;
+  --mist-400: #a9a29b;
+  --mist-500: #7d766f;
+  --mist-600: #574f49;
+  --page: var(--bone);
+  --card: #ffffff;
+  --body-text: var(--mist-600);
+  --radius: 1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #141110;
+    --card: #1c1917;
+    --ink: #f7f4f1;
+    --body-text: #c8c1ba;
+    --mist-100: #231f1d;
+    --mist-200: #322d2a;
+    --mist-300: #4a443f;
+    --mist-400: #8c847c;
+    --mist-500: #a39b93;
+    --tangerine: #ff8438;
+    --tangerine-wash: #2a1a0e;
+    --blue-wash: #16212b;
+    --blue: #8fb0ce;
+  }
+}
+
+:root[data-theme="dark"] {
+  --page: #141110;
+  --card: #1c1917;
+  --ink: #f7f4f1;
+  --body-text: #c8c1ba;
+  --mist-100: #231f1d;
+  --mist-200: #322d2a;
+  --mist-300: #4a443f;
+  --mist-400: #8c847c;
+  --mist-500: #a39b93;
+  --tangerine: #ff8438;
+  --tangerine-wash: #2a1a0e;
+  --blue-wash: #16212b;
+  --blue: #8fb0ce;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--body-text);
+  font-family: "Jost", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.wrap {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 3.5rem 16px 6rem;
+}
+
+header.masthead { margin-bottom: 2.5rem; }
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mist-500);
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-family: "Bodoni Moda", ui-serif, Georgia, serif;
+  font-weight: 500;
+  font-size: clamp(2.25rem, 7vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--tangerine);
+  margin: 0 0 0.75rem;
+}
+
+.updated { font-size: 0.875rem; color: var(--mist-500); margin: 0; }
+
+h2 {
+  font-family: "Jost", sans-serif;
+  font-weight: 600;
+  font-size: 1.1875rem;
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 2.75rem 0 0.75rem;
+  scroll-margin-top: 1rem;
+}
+
+h2 .num {
+  color: var(--tangerine);
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.5rem;
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 1.75rem 0 0.5rem;
+}
+
+p { margin: 0 0 1rem; }
+
+a { color: var(--blue); text-underline-offset: 0.2em; }
+a:hover { color: var(--tangerine); }
+
+strong { color: var(--ink); font-weight: 600; }
+
+ul { margin: 0 0 1rem; padding-left: 1.1rem; }
+li { margin-bottom: 0.45rem; }
+li::marker { color: var(--tangerine); }
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--mist-200);
+  margin: 2.5rem 0;
+}
+
+/* The plain-language summary at the top of each document. */
+.summary {
+  background: var(--tangerine-wash);
+  border: 1px solid var(--mist-200);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.375rem;
+  margin: 0 0 2rem;
+}
+.summary p { margin: 0 0 0.6rem; color: var(--tangerine-deep); }
+.summary p:last-child { margin-bottom: 0; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .summary p { color: #f0b388; }
+}
+
+/* Anything the reader must not skim past. */
+.notice {
+  background: var(--blue-wash);
+  border-left: 3px solid var(--blue);
+  border-radius: 0 0.75rem 0.75rem 0;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+}
+.notice p { margin: 0 0 0.6rem; font-size: 0.9375rem; }
+.notice p:last-child { margin-bottom: 0; }
+
+.critical {
+  background: var(--card);
+  border: 2px solid var(--tangerine);
+  border-radius: var(--radius);
+  padding: 1.375rem 1.5rem;
+  margin: 1.5rem 0;
+}
+.critical h3 { margin-top: 0; color: var(--tangerine); }
+.critical p:last-child { margin-bottom: 0; }
+
+/* Details the operator has not supplied yet. Deliberately loud: these must
+   never reach a published page unfilled. */
+.tofill {
+  display: block;
+  background: repeating-linear-gradient(45deg, var(--mist-100), var(--mist-100) 10px, var(--mist-200) 10px, var(--mist-200) 20px);
+  border: 2px dashed var(--tangerine);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  color: var(--tangerine-deep);
+  font-size: 0.9375rem;
+}
+.tofill b { display: block; color: var(--tangerine-deep); margin-bottom: 0.35rem; }
+.tofill-row { display: block; padding: 0.15rem 0; font-variant-numeric: tabular-nums; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.9375rem;
+}
+th {
+  text-align: left;
+  background: var(--ink);
+  color: var(--page);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.6rem 0.75rem;
+}
+td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--mist-200); vertical-align: top; }
+tbody tr:nth-child(even) { background: var(--mist-100); }
+
+.toc {
+  background: var(--card);
+  border: 1px solid var(--mist-200);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.toc p { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mist-500); margin: 0 0 0.6rem; }
+.toc ol { margin: 0; padding-left: 1.25rem; columns: 2; column-gap: 2rem; font-size: 0.9375rem; }
+.toc li { margin-bottom: 0.3rem; break-inside: avoid; }
+@media (max-width: 34rem) { .toc ol { columns: 1; } }
+
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--mist-200);
+  font-size: 0.8125rem;
+  color: var(--mist-400);
+}
+footer a { color: var(--mist-500); }
+
+@media print {
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .toc, footer { display: none; }
+  h1 { color: #000; }
+  .tofill { border: 2px solid #000; background: none; }
+}

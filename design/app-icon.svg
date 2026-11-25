@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#FF4FA3"/>
+      <stop offset="46%" stop-color="#DE3399"/>
+      <stop offset="100%" stop-color="#7B4DFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#g)"/>
+
+  <!-- Gull in flight. One closed path, no stroke: the wings taper from the body
+       to needle tips, which is what separates a bird from a checkmark — drawn
+       as a constant-width stroke this shape reads only as a tick. The right
+       wing is the longer one, so the gesture leans like a tick without being
+       drawn as one.
+       Authored bounds 196,306-856,586 (660x280, body 0.118 of span — the slim
+       cut, deliberately lighter than the heavier variants). The transform
+       centres those bounds and scales the mark to 720px wide. -->
+  <g transform="translate(512,512) scale(1.090909) translate(-526,-446)">
+    <path fill="#000" d="M 196 452
+      C 296 384, 398 428, 470 508
+      C 494 534, 524 538, 548 516
+      C 622 436, 740 338, 856 306
+      C 742 374, 642 468, 566 558
+      C 534 594, 478 594, 446 560
+      C 376 486, 288 448, 196 452 Z"/>
+  </g>
+</svg>

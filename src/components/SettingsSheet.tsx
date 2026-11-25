@@ -7,12 +7,10 @@ import type { Pillar } from "@/types";
 export default function SettingsSheet({
   open,
   onClose,
-  onUpgrade,
   onSignOut,
 }: {
   open: boolean;
   onClose: () => void;
-  onUpgrade: () => void;
   onSignOut: () => void;
 }) {
   const { state, status, saveProfile, signOut, eraseEverything } = useStore();
@@ -26,9 +24,18 @@ export default function SettingsSheet({
       focus: profile.focus.includes(id) ? profile.focus.filter((f) => f !== id) : [...profile.focus, id],
     });
 
+  // A number input reports "" while it is being cleared, and Number("") is 0.
+  // Unclamped that reaches the cycle maths as a modulo by zero — "Day NaN" on
+  // Home — and the row fails the database's own range check, so the write
+  // retries forever. min/max on the element stop neither.
+  const clamp = (raw: string, lo: number, hi: number, fallback: number) => {
+    const n = Math.round(Number(raw));
+    return Number.isFinite(n) && n > 0 ? Math.min(Math.max(n, lo), hi) : fallback;
+  };
+
   return (
     <Sheet open={open} onClose={onClose} label="Settings">
-      <h2 className="display text-[28px] text-tangerine">Your setup</h2>
+      <h2 className="display text-[29px] text-pearl">Change your setup.</h2>
 
       <div className="mt-6 space-y-6">
         <section>
@@ -36,7 +43,7 @@ export default function SettingsSheet({
           <input
             value={profile.name}
             onChange={(e) => saveProfile({ name: e.target.value })}
-            className="mt-2 w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+            className="mt-2 w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
           />
         </section>
 
@@ -45,11 +52,11 @@ export default function SettingsSheet({
             <span className="eyebrow mb-2 block">Cycle length</span>
             <input
               type="number"
-              min={20}
-              max={60}
+              min={15}
+              max={90}
               value={profile.cycleLength}
-              onChange={(e) => saveProfile({ cycleLength: Number(e.target.value) })}
-              className="w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+              onChange={(e) => saveProfile({ cycleLength: clamp(e.target.value, 15, 90, 28) })}
+              className="w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
             />
           </label>
           <label className="block">
@@ -57,10 +64,10 @@ export default function SettingsSheet({
             <input
               type="number"
               min={1}
-              max={14}
+              max={15}
               value={profile.periodLength}
-              onChange={(e) => saveProfile({ periodLength: Number(e.target.value) })}
-              className="w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+              onChange={(e) => saveProfile({ periodLength: clamp(e.target.value, 1, 15, 5) })}
+              className="w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
             />
           </label>
         </section>
@@ -76,46 +83,21 @@ export default function SettingsSheet({
           </div>
         </section>
 
-        <section className="rounded-2xl bg-mist-100 px-4 py-3.5">
-          <Eyebrow>Membership</Eyebrow>
-          {profile.subscribed ? (
-            <p className="mt-1 text-[13.5px] text-mist-600">
-              Premium · {profile.plan === "annual" ? "Annual, ₹6,999" : "Monthly, ₹699"}
-            </p>
-          ) : (
-            <>
-              <p className="mt-1 text-[13.5px] leading-relaxed text-mist-600">
-                You're on the free plan — tracking, calendar, nutrition and your cycle patterns.
-              </p>
-              <Button
-                full
-                onClick={() => {
-                  onClose();
-                  onUpgrade();
-                }}
-                className="mt-3"
-              >
-                See what's in premium
-              </Button>
-            </>
-          )}
-        </section>
-
         <section>
           <Eyebrow>Privacy</Eyebrow>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-mist-500">
+          <p className="mt-1.5 text-[13px] leading-relaxed text-ash">
             {state.session
               ? `Your logs sync privately to your account (${state.session.email}) so they survive a new phone. Only you can read them. Ease never sells your health data and never shares it with advertisers.`
-              : "Your logs are on this device only. Make an account and they'll follow you to any phone. Ease never sells your health data and never shares it with advertisers."}
+              : "Your logs are on this device only. Create an account to carry them to any phone you sign in on. Ease never sells your health data and never shares it with advertisers."}
           </p>
           {state.session ? (
-            <p className="mt-2 text-[12px] text-mist-400">
+            <p className="mt-2 text-[12px] text-dusk">
               {status === "synced"
                 ? "All changes saved."
                 : status === "loading"
                   ? "Syncing…"
                   : status === "offline"
-                    ? "Offline — your changes are saved here and will sync when you reconnect."
+                    ? "Offline. Changes are saved here and sync when you reconnect."
                     : "Saved on this device."}
             </p>
           ) : null}
@@ -136,15 +118,15 @@ export default function SettingsSheet({
         </Button>
 
         {confirmingReset ? (
-          <div className="rounded-2xl border border-mist-200 p-4">
-            <p className="text-[13.5px] leading-relaxed text-ink">
+          <div className="rounded-2xl border border-veil p-4">
+            <p className="text-[13.5px] leading-relaxed text-pearl">
               {state.session
                 ? "This closes your account and permanently deletes every log, meal, event and setting — here and on our servers. It can't be undone."
                 : "Delete every log, meal and setting on this device? This can't be undone."}
             </p>
 
             {deleteError ? (
-              <p role="alert" className="mt-3 text-[13px] font-medium text-[#B4321F]">
+              <p role="alert" className="mt-3 text-[13px] font-medium text-alarm">
                 {deleteError}
               </p>
             ) : null}
@@ -165,7 +147,7 @@ export default function SettingsSheet({
                   } catch (err) {
                     // Never imply the data is gone when the server said otherwise.
                     setDeleteError(
-                      err instanceof Error ? err.message : "Could not delete your account. Please try again.",
+                      err instanceof Error ? err.message : "Could not delete the account. Try again.",
                     );
                   } finally {
                     setErasing(false);

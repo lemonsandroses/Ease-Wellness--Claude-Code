@@ -47,6 +47,15 @@ export interface Meal {
   fibre: number;
   nutrients: string[];
   note?: string;
+  /**
+   * Object path inside the `meal-photos` storage bucket, e.g.
+   * `<user-id>/meal_123.jpg`. Not a URL — the bucket is private, so a signed
+   * URL is minted on demand. Absent when the meal was logged without a photo,
+   * or when the upload failed and we kept the meal anyway.
+   */
+  photoPath?: string;
+  /** Where the macros came from. "ai" means a vision estimate the user accepted. */
+  source?: "manual" | "ai";
   loggedAt: string;
 }
 
@@ -95,6 +104,10 @@ export interface CycleState {
   variance?: number;
   nextPeriodDate?: string;
   daysUntilNext?: number;
+  /** Past the expected start date with no new bleed logged. */
+  overdue: boolean;
+  /** Days beyond the expected start, once overdue. */
+  daysLate?: number;
   cycleCount: number;
 }
 

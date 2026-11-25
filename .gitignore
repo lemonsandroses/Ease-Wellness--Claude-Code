@@ -24,3 +24,20 @@ android/build/
 android/app/build/
 android/local.properties
 .DS_Store
+.env.qa
+
+# test bundle output
+.test-build/
+
+# Xcode output from the release/simulator/device build scripts. `build/` above
+# only covers one of them; these three hold ~15k files between them.
+ios/App/build-sim/
+ios/App/build-release/
+ios/App/build-device/
+
+# Supabase CLI scratch
+supabase/.temp/
+
+# Unlicensed Futura, moved out of public/ so it stops being bundled into the
+# IPA. Kept on disk for reference only — never commit or redistribute it.
+vendor/futura-unlicensed/

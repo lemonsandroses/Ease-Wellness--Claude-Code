@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App Store Connect distribution. Changing this to "development" or
+	     "ad-hoc" produces an IPA that App Store Connect will reject. -->
+	<key>method</key>
+	<string>app-store-connect</string>
+
+	<key>teamID</key>
+	<string>58HVGA8D4U</string>
+
+	<!-- Let Xcode resolve the distribution certificate and provisioning
+	     profile from the account, rather than pinning names that change
+	     whenever a certificate is regenerated. -->
+	<key>signingStyle</key>
+	<string>automatic</string>
+
+	<!-- Upload the dSYMs so App Store Connect can symbolicate crash reports.
+	     Without these, every crash in the organiser is raw addresses. -->
+	<key>uploadSymbols</key>
+	<true/>
+
+	<!-- Bitcode has been removed from the toolchain since Xcode 14; leaving
+	     this true causes a warning and nothing else. -->
+	<key>uploadBitcode</key>
+	<false/>
+
+	<key>destination</key>
+	<string>export</string>
+
+	<key>generateAppStoreInformation</key>
+	<true/>
+</dict>
+</plist>

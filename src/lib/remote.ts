@@ -87,6 +87,8 @@ function rowToMeal(r: Record<string, unknown>): Meal {
     fibre: Number(r.fibre ?? 0),
     nutrients: (r.nutrients as string[]) ?? [],
     note: (r.note as string) ?? undefined,
+    photoPath: (r.photo_path as string) ?? undefined,
+    source: (r.source as Meal["source"]) ?? undefined,
     loggedAt: (r.logged_at as string) ?? new Date().toISOString(),
   };
 }
@@ -105,6 +107,8 @@ function mealToRow(m: Meal, userId: string) {
     fibre: m.fibre,
     nutrients: m.nutrients,
     note: m.note ?? null,
+    photo_path: m.photoPath ?? null,
+    source: m.source ?? null,
     logged_at: m.loggedAt,
   };
 }
@@ -217,9 +221,47 @@ export async function pushLog(l: DayLog, userId: string) {
   if (error) throw error;
 }
 
+/**
+ * True once the server has told us it has never heard of the photo columns.
+ *
+ * `0003_meal_photos.sql` adds `photo_path` and `source`. Until that migration
+ * runs, PostgREST rejects any write naming them — and the sync queue treats a
+ * schema rejection as permanent and drops the write. That would mean every
+ * meal logged on a new build saved locally and silently never reached the
+ * server. Remembering the answer keeps it to one wasted round trip per app
+ * run rather than one per meal.
+ */
+let photoColumnsMissing = false;
+
+/** PostgREST's code for a column the schema cache does not know about. */
+function isUnknownColumn(err: unknown): boolean {
+  const e = err as { code?: string; message?: string } | null;
+  if (!e) return false;
+  if (e.code === "PGRST204") return true;
+  const msg = (e.message ?? "").toLowerCase();
+  return msg.includes("photo_path") || (msg.includes("source") && msg.includes("column"));
+}
+
 export async function pushMeal(m: Meal, userId: string) {
   if (!supabase) return;
-  const { error } = await supabase.from("meals").upsert(mealToRow(m, userId));
+
+  if (!photoColumnsMissing) {
+    const { error } = await supabase.from("meals").upsert(mealToRow(m, userId));
+    if (!error) return;
+    if (!isUnknownColumn(error)) throw error;
+    // The migration has not been applied on this project yet.
+    photoColumnsMissing = true;
+    console.warn(
+      "meals.photo_path / meals.source are missing — run supabase/migrations/0003_meal_photos.sql. " +
+        "Meals will sync without the photo until then.",
+    );
+  }
+
+  // Fallback: the same row minus the two columns the server does not have. The
+  // meal still reaches the database; only the photo reference is left behind,
+  // and it is still on the device if the migration lands later.
+  const { photo_path: _photoPath, source: _source, ...legacy } = mealToRow(m, userId);
+  const { error } = await supabase.from("meals").upsert(legacy);
   if (error) throw error;
 }
 

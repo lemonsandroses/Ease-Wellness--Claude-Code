@@ -1,0 +1,170 @@
+Legal
+
+Privacy Policy
+
+Last updated 29 October 2026 · Applies to Ease for iOS and Android
+
+In short. Ease stores your cycle and health logs in your own account so they survive a new phone. Only you can read them — this is enforced by the database itself, not just by our code.
+
+We have never sold personal data and we never will. No advertiser, data broker, insurer or employer receives any of it. There is no advertising SDK and no analytics SDK in the app. You can delete everything, permanently, from inside Settings.
+
+1. Who we are
+
+Ease is a menstrual health and lifestyle app. This policy explains what the app collects about you, why, and what you can do about it. It is written for India's Digital Personal Data Protection Act, 2023 (the DPDP Act), under which you are a Data Principal and we are the Data Fiduciary responsible for your data.
+
+>>> FILL THIS IN BEFORE PUBLISHING <<<
+    To be completed before publication
+    Registered legal name: ______________________
+    Registered address: ______________________
+    CIN: ______________________
+    Website: easewellness.org ✓
+    Privacy contact email: ______________________
+
+2. What this covers
+
+This policy covers the Ease mobile app and this website. It does not cover Apple, Google, or any other service you reach from the app, each of which handles your data under its own policy.
+
+Ease is currently offered in India only. If we later make it available in the European Economic Area, the United Kingdom, or other territories, we will publish an updated policy addressing the additional rights that apply there before doing so.
+
+3. What we collect
+
+Everything below is given to us by you. Ease contains no advertising SDK, no analytics SDK and no tracking pixel. It does not collect your location, contacts, photos, microphone or camera, and it does not read from or write to Apple Health or Google Fit.
+
+Account information
+• Your email address
+• Your name, if you give one during onboarding
+• Your date of birth, if you give one — this is optional
+• A randomly generated account identifier
+If you sign in with Apple or Google, we receive only the identity token they issue: your email address — or Apple's private relay address, if you chose to hide yours — and your name where provided. We never receive your Apple or Google password.
+
+Health information
+This is sensitive personal data and we treat it accordingly. It is whatever you choose to log:
+
+• Menstrual bleeding days and flow level
+• Symptoms you record, and how strong each one is
+• Your typical cycle length, period length and last period start date
+• Energy, mood, stress and sleep entries
+• Movement and exercise entries
+• Meals and their nutritional breakdown
+• Free-text notes you write against any day
+• The health focus areas and baseline symptoms you chose during onboarding
+
+Calendar information
+Only if you connect Google Calendar. We read your upcoming events so the app can show them beside your cycle, and we store each event's title, date, time, location and notes. We never write to, change or delete anything in your Google Calendar. Disconnecting stops all further access.
+
+Google API Limited Use. Ease's use of information received from Google APIs adheres to the Google API Services User Data Policy, including its Limited Use requirements. Calendar data is used only to display your events alongside your cycle. It is never sold, never used for advertising, and never read by a person except with your explicit permission to resolve a support issue you have raised.
+
+Subscription information
+Whether you hold an active subscription and which plan you are on. Payments are processed entirely by Apple or Google — we never see your card details.
+
+What the app works out on your device
+Ease looks for patterns in what you log — for example whether short nights track with heavier symptoms, or whether a symptom concentrates in one half of your cycle. This analysis runs on your phone. The results are shown to you and are not sent to us, stored on our servers, or used to build any profile of you.
+
+4. Why we process it, and your consent
+
+Under the DPDP Act we process your personal data on the basis of your consent, which you give when you create an account and confirm you have read this policy. You may withdraw that consent at any time by deleting your account, as described in section 10.
+
+   What  —  Why we need it
+   Account information  —  To create your account, keep it secure, and let you sign in from another device
+   Health information  —  To work out where you are in your cycle, show you patterns, and tailor the guidance you see
+   Calendar information  —  To show your plans beside your cycle phases
+   Subscription information  —  To unlock the features you have paid for
+
+We do not profile you for advertising, make automated decisions that have legal effects, or use your data to train machine learning models.
+
+5. Where it is stored, and how it is protected
+
+Your data is held in a managed PostgreSQL database operated by Supabase on our behalf, hosted in Mumbai, India (AWS ap-south-1).
+
+Your data does not leave India. We do not transfer your personal data to any other country, so none of the cross-border transfer provisions of the DPDP Act apply to it.
+
+>>> FILL THIS IN BEFORE PUBLISHING <<<
+    To be completed before publication
+    Backup retention period: ____ days (check your Supabase plan)
+
+• Row-level security on every table. The database itself — not application code — enforces that a signed-in account can only ever read or write its own rows. We have tested this adversarially: one account could not read, change or delete another's data under any condition we tried.
+• Your data is encrypted in transit using TLS, and encrypted at rest.
+• The access key embedded in the app grants nothing without a valid session, and a session only ever unlocks that one account's data.
+A copy is also kept on your own device, so the app keeps working when you have no signal.
+
+6. Who else receives it
+
+   Service  —  What they receive  —  Why
+   Supabase  —  Your account and health data  —  Database and authentication hosting
+   RevenueCat  —  Your account identifier and subscription status  —  Managing subscriptions
+   Apple / Google  —  Your payment details and purchase record  —  Processing payment — we never see card details
+   Apple / Google  —  An identity token, if you use their sign-in  —  Signing you in
+   Google Calendar  —  Nothing — we only read  —  Showing your events beside your cycle
+
+Supabase and RevenueCat act as processors on our instructions. Apple and Google act independently as payment and identity providers under their own policies.
+
+We have never sold personal data, and we do not share it with advertisers, data brokers, insurers or employers. If we are ever required to disclose data by a lawful order, we will tell you unless we are legally prohibited from doing so.
+
+7. Our health-data commitments
+
+Reproductive health data is sensitive in ways that go beyond what regulation requires. So, specifically:
+
+• It is never used for advertising or marketing, by us or by anyone else.
+• It is never shared with insurers, employers or any data broker.
+• Access is restricted to you. Our staff cannot browse your logs.
+• We hold no more than the app needs in order to work.
+
+8. Children
+
+Ease is for adults. You must be 18 or over to use it.
+
+Under the DPDP Act, anyone under 18 in India is a Child, and processing a Child's personal data requires verifiable consent from a parent or legal guardian. Health data of the kind Ease holds deserves a higher bar than we can currently meet, so rather than process it without proper consent we do not accept accounts from anyone under 18 at all.
+
+We ask for your date of birth during onboarding and we do not create an account if it shows you are under 18. We do not knowingly collect personal data from children. If you believe someone under 18 has an account, contact us using the details in section 14 and we will delete it.
+
+The DPDP Act also prohibits tracking, behavioural monitoring and targeted advertising directed at children. Ease does none of those things for any user, at any age.
+
+9. How long we keep it
+
+• While your account is open — your logs are kept so your history stays intact. That continuity is the point of the app.
+• When you delete your account — every row we hold about you is erased immediately, together with your sign-in record. This is a real deletion, not a flag marking the data hidden. We have verified it by test.
+• Backups — deleted data persists in encrypted database backups for the retention period noted in section 5, after which it is overwritten.
+• Support emails — kept for up to 12 months.
+
+10. Your rights
+
+As a Data Principal under the DPDP Act, you have the right to:
+
+• Access a summary of the personal data we hold about you and how we process it
+• Correct anything inaccurate, and complete anything incomplete — most of it is editable in the app
+• Erase your personal data — Settings → Delete my account
+• Withdraw consent at any time, with the same ease you gave it
+• Nominate another person to exercise these rights on your behalf if you die or become incapacitated
+• Complain to the Data Protection Board of India if we do not resolve your grievance
+Most of these you can exercise yourself inside the app. For anything else, write to the privacy contact in section 14 and we will respond within 30 days.
+
+You also have a duty under the DPDP Act not to impersonate anyone else or file false or frivolous grievances.
+
+11. Grievance redressal
+
+If you are unhappy with how we have handled your data, contact our Grievance Officer. We will acknowledge your grievance and respond within 30 days. If you are not satisfied with our response, you may escalate to the Data Protection Board of India.
+
+>>> FILL THIS IN BEFORE PUBLISHING <<<
+    To be completed before publication — the DPDP Act requires a named individual, not a role inbox
+    Grievance Officer name: ______________________
+    Designation: ______________________
+    Email: ______________________
+    Postal address: ______________________
+
+12. Security and breaches
+
+We take reasonable security safeguards to prevent a personal data breach, including those described in section 5. No system is perfectly secure, but if a breach affecting your data does occur, we will notify both you and the Data Protection Board of India as the DPDP Act requires.
+
+13. Changes to this policy
+
+If we make a material change we will update the date at the top of this page and tell you in the app before it takes effect. Where a change affects how we process health data, we will ask for your consent again rather than assume it.
+
+14. Contact us
+
+>>> FILL THIS IN BEFORE PUBLISHING <<<
+    To be completed before publication
+    Privacy enquiries: ______________________
+    Grievances: ______________________
+    Postal address: ______________________
+
+Terms of Use · Ease — menstrual health, tracked honestly.

@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Ease implements no encryption of its own. The only cryptographic calls
+	     are crypto.getRandomValues and a SHA-256 digest (a hash, not a cipher)
+	     used to build the Sign in with Apple nonce, both provided by WebKit,
+	     i.e. the operating system. Network traffic is TLS via the OS. That is
+	     the exempt case, so declare it here and stop App Store Connect asking
+	     on every upload. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
   <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
@@ -64,7 +72,15 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Ease uses the camera so you can photograph a meal when you log it.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ease lets you attach a photo from your library to a meal you log.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Ease can save a meal photo you take back to your photo library.</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>UIUserInterfaceStyle</key>
+	<string>Dark</string>
 </dict>
 </plist>

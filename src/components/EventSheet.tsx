@@ -40,11 +40,11 @@ export default function EventSheet({
 
   const save = () => {
     if (!title.trim()) {
-      setError("Give it a name first");
+      setError("Enter a name first.");
       return;
     }
     if (startTime && endTime && endTime < startTime) {
-      setError("The end time is before the start time");
+      setError("Set an end time after the start time.");
       return;
     }
     onSave({
@@ -64,10 +64,10 @@ export default function EventSheet({
 
   return (
     <Sheet open={open} onClose={onClose} label={existing ? "Edit" : "Add to your day"}>
-      <h2 className="display text-[28px] text-tangerine">{existing ? "Edit this" : "What's happening?"}</h2>
+      <h2 className="display text-[29px] text-pearl">{existing ? "Edit this entry." : "Add to this day."}</h2>
 
       {existing?.googleId ? (
-        <p className="mt-2 rounded-xl bg-blue-wash px-3.5 py-2.5 text-[12.5px] leading-relaxed text-blue">
+        <p className="mt-2 rounded-xl bg-plasma-veil px-3.5 py-2.5 text-[12.5px] leading-relaxed text-plasma-bright">
           This came from Google Calendar. Edits here stay in Ease — they won't be written back to Google.
         </p>
       ) : null}
@@ -91,7 +91,7 @@ export default function EventSheet({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={kind === "task" ? "Book the blood test" : "Shoot with the brand team"}
-            className="mt-2 w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+            className="mt-2 w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
           />
         </section>
 
@@ -103,7 +103,7 @@ export default function EventSheet({
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+                className="w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
               />
             </label>
             <label className="block">
@@ -112,7 +112,7 @@ export default function EventSheet({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+                className="w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
               />
             </label>
           </section>
@@ -124,7 +124,7 @@ export default function EventSheet({
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Studio, clinic, home"
-            className="mt-2 w-full rounded-2xl border border-mist-200 bg-white px-4 py-3.5 text-[15px] outline-none focus:border-tangerine"
+            className="mt-2 w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
           />
         </section>
 
@@ -134,12 +134,12 @@ export default function EventSheet({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            className="mt-2 w-full resize-none rounded-2xl border border-mist-200 bg-white px-4 py-3 text-[14px] outline-none focus:border-tangerine"
+            className="mt-2 w-full resize-none rounded-2xl border border-veil bg-slate px-4 py-3 text-[14px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
           />
         </section>
 
         {error ? (
-          <p role="alert" className="text-[13px] font-medium text-[#B4321F]">
+          <p role="alert" className="text-[13px] font-medium text-alarm">
             {error}
           </p>
         ) : null}
