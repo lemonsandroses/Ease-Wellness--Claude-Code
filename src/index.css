@@ -189,14 +189,23 @@ body {
   position: fixed;
   inset-inline: 0;
   top: 0;
-  height: calc(var(--safe-top) + 14px);
+  height: calc(var(--safe-top) + 24px);
   z-index: 30;
   pointer-events: none;
+  /* The stops are anchored to --safe-top, not to percentages of the scrim.
+     With percentages the fade began a third of the way up the status bar: at
+     the height of the clock the scrim was already ~55% transparent, so bright
+     content scrolling past — the gloss "+ Meal" button especially — showed
+     through beside the Dynamic Island and collided with the system glyphs.
+     Now it is fully opaque for the whole of the safe area and only starts
+     fading below it, which keeps the fade reading as depth rather than a bar
+     while actually covering the thing it exists to cover. */
   background: linear-gradient(
     180deg,
     var(--color-void) 0%,
-    rgba(6, 4, 11, 0.92) 48%,
-    rgba(6, 4, 11, 0.55) 78%,
+    var(--color-void) var(--safe-top),
+    rgba(6, 4, 11, 0.86) calc(var(--safe-top) + 8px),
+    rgba(6, 4, 11, 0.45) calc(var(--safe-top) + 16px),
     transparent 100%
   );
 }
