@@ -83,7 +83,13 @@ export default function CycleRing({
         height={SIZE}
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         role="img"
-        aria-label={`Cycle day ${day} of about ${cycleLength}, ${PHASE_LABEL[phase]} phase`}
+        // Same reason the header no longer says "of 31" past day 31: a
+        // denominator the number has overtaken is wrong read aloud too.
+        aria-label={
+          day > cycleLength
+            ? `Cycle day ${day}, past the usual ${cycleLength} days, ${PHASE_LABEL[phase]} phase`
+            : `Cycle day ${day} of about ${cycleLength}, ${PHASE_LABEL[phase]} phase`
+        }
         className="relative"
       >
         <defs>

@@ -29,6 +29,9 @@ export default function Home({
   const [mealOpen, setMealOpen] = useState(false);
 
   const cycle = useMemo(() => computeCycleState(state.profile, state.logs), [state.profile, state.logs]);
+  /** What the day count is measured against: the average of logged
+   *  cycles once there are any, else the length given at onboarding. */
+  const usualLength = cycle.observedLength ?? state.profile.cycleLength;
   const streak = useMemo(() => computeStreak(state.logs), [state.logs]);
   const phase = PHASE_CONTENT[cycle.phase];
   const days = lastNDays(7);
@@ -81,8 +84,12 @@ export default function Home({
         </h1>
         <p className="mt-1.5 text-[14px] text-ash">
           {cycle.known
-            ? `${firstName ? `${firstName} · ` : ""}${cycle.estimated ? "Around day" : "Day"} ${cycle.day} of ${
-                cycle.observedLength ?? state.profile.cycleLength
+            ? `${firstName ? `${firstName} · ` : ""}${cycle.estimated ? "Around day" : "Day"} ${cycle.day}${
+                // "Day 41 of 31" states a denominator the number has already
+                // passed. The count climbing past the usual length is correct and
+                // deliberate — a long cycle is the signal this app exists to
+                // surface — so the number stays and the phrasing changes.
+                cycle.day > usualLength ? ` · usually ${usualLength} days` : ` of ${usualLength}`
               }`
             : "Ease needs one bleeding day before it can place you in a phase."}
         </p>
