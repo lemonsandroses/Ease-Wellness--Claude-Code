@@ -5,6 +5,8 @@ import { Button, Chip, Eyebrow, Sheet } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { today } from "@/lib/date";
 import { glide } from "@/lib/motion";
+// Aliased: this file already has a local dropPhoto that clears the preview.
+import { dropPhoto as dropPendingPhoto, putPhoto } from "@/lib/photoStore";
 import {
   capturePhoto,
   CaptureCancelled,
@@ -169,13 +171,23 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
 
     // The photo is a nice-to-have; the log is the point. If the upload fails —
     // offline, storage not provisioned, bucket missing — the meal is still
-    // saved, and the person is told the photo did not make it rather than
-    // losing the entry they just typed.
-    if (photo && state.session) {
-      try {
-        photoPath = await uploadMealPhoto(photo.blob, state.session.id, id);
-      } catch {
-        setNotice("Meal saved, but the photo couldn't be uploaded.");
+    // saved rather than losing the entry that was just typed.
+    //
+    // Either way the blob is kept on the device first. Without an account there
+    // is nowhere to upload it to, and the previous behaviour was to drop it
+    // silently on save: the preview appeared, Save was tapped, and the photo
+    // was simply gone — while the sheet said "this one stays on the device".
+    // Now that sentence is true, and uploadPendingPhotos sends it the first
+    // time a session exists.
+    if (photo) {
+      await putPhoto(id, photo.blob);
+      if (state.session) {
+        try {
+          photoPath = await uploadMealPhoto(photo.blob, state.session.id, id);
+          await dropPendingPhoto(id); // Uploaded — no need to hold a second copy.
+        } catch {
+          setNotice("Meal saved. The photo is on this device and will upload later.");
+        }
       }
     }
 
@@ -279,7 +291,7 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
 
           {!state.session && photo ? (
             <p className="mt-2 text-[12px] leading-relaxed text-dusk">
-              Photos upload once you have an account. This one stays on the device.
+              This photo is kept on this device. Create an account and it uploads with the meal.
             </p>
           ) : null}
         </section>

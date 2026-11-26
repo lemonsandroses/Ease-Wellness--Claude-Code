@@ -222,3 +222,32 @@ export async function deleteMealPhoto(path: string): Promise<void> {
   if (!supabase) return;
   await supabase.storage.from(BUCKET).remove([path]);
 }
+
+/**
+ * Send up anything taken before there was an account to send it to.
+ *
+ * Called when a session appears. Each photo is uploaded, the meal row is
+ * patched with its path, and only then is the local copy dropped — losing the
+ * device copy before the upload is confirmed would lose the photo outright.
+ *
+ * Failures are left pending rather than discarded. The next sign-in, or the
+ * next launch with a session, tries again.
+ */
+export async function uploadPendingPhotos(
+  userId: string,
+  mealIds: string[],
+  onUploaded: (mealId: string, path: string) => void,
+): Promise<void> {
+  const { getPhoto, dropPhoto } = await import("./photoStore");
+  for (const mealId of mealIds) {
+    try {
+      const blob = await getPhoto(mealId);
+      if (!blob) continue;
+      const path = await uploadMealPhoto(blob, userId, mealId);
+      onUploaded(mealId, path);
+      await dropPhoto(mealId);
+    } catch {
+      // Offline, or storage not reachable. Keep it and try again later.
+    }
+  }
+}

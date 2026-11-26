@@ -242,7 +242,7 @@ Select an earlier date
               <ul className="mt-4 space-y-2 border-t border-veil pt-4">
                 {todayMeals.map((m) => (
                   <li key={m.id} className="flex items-center gap-3">
-                    <MealThumb path={m.photoPath} alt={m.name} />
+                    <MealThumb path={m.photoPath} mealId={m.id} alt={m.name} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[14px] text-pearl">{m.name}</span>
                       <span className="mt-0.5 block text-[11.5px] text-dusk">

@@ -1,31 +1,55 @@
 import { useEffect, useState } from "react";
 import { mealPhotoUrl } from "@/lib/mealPhoto";
+import { getPhoto } from "@/lib/photoStore";
 
 /**
- * Thumbnail for a stored meal photo.
+ * Thumbnail for a meal photo, from whichever of the two places holds it.
  *
- * The bucket is private, so there is no durable URL to put in `src` — each
- * mount mints a signed one. Renders nothing at all when there is no photo or
- * the signing fails, so a missing image never leaves a broken frame in a list.
+ * An uploaded photo lives in a private bucket, so there is no durable URL to
+ * put in `src` — each mount mints a signed one. A photo taken without an
+ * account has not been uploaded yet and sits in IndexedDB instead; it is shown
+ * from there until a session exists and it syncs.
+ *
+ * Renders nothing when neither has it, so a missing image never leaves a
+ * broken frame in a list.
  */
-export default function MealThumb({ path, alt }: { path?: string; alt: string }) {
+export default function MealThumb({ path, mealId, alt }: { path?: string; mealId: string; alt: string }) {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!path) {
-      setUrl(null);
-      return;
-    }
     let live = true;
-    void mealPhotoUrl(path).then((u) => {
-      if (live) setUrl(u);
-    });
+    // Object URLs must be revoked on cleanup; signed URLs must not be. Track
+    // which kind this is rather than revoking whatever is in state.
+    let objectUrl: string | null = null;
+
+    void (async () => {
+      if (path) {
+        const signed = await mealPhotoUrl(path);
+        if (!live) return;
+        if (signed) {
+          setUrl(signed);
+          return;
+        }
+        // Signing failed — fall through to the local copy, which is still
+        // there whenever an upload has not been confirmed.
+      }
+      const blob = await getPhoto(mealId);
+      if (!live) return;
+      if (blob) {
+        objectUrl = URL.createObjectURL(blob);
+        setUrl(objectUrl);
+      } else {
+        setUrl(null);
+      }
+    })();
+
     return () => {
       live = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [path]);
+  }, [path, mealId]);
 
-  if (!path || !url) return null;
+  if (!url) return null;
 
   return (
     <img

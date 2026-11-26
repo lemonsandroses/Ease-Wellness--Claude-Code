@@ -219,6 +219,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [enqueue],
   );
 
+  /**
+   * Upload photos taken before there was an account.
+   *
+   * A photo can be captured signed out, in which case it is kept in IndexedDB
+   * and the meal row carries no path. The moment a session exists those get
+   * sent up and the rows patched, so a meal logged before signing up keeps its
+   * photo afterwards instead of quietly losing it.
+   */
+  const syncPendingPhotos = useCallback(async (uid: string) => {
+    const { pendingIds } = await import("./photoStore");
+    const ids = await pendingIds();
+    if (!ids.length) return;
+    const { uploadPendingPhotos } = await import("./mealPhoto");
+    await uploadPendingPhotos(uid, ids, (mealId, path) => {
+      setState((s) => {
+        const meals = s.meals.map((m) => (m.id === mealId ? { ...m, photoPath: path } : m));
+        const updated = meals.find((m) => m.id === mealId);
+        if (updated) void remote.pushMeal(updated, uid).catch(() => {});
+        return { ...s, meals };
+      });
+    });
+  }, []);
+
   // Track the Supabase session and hydrate whenever it changes.
   useEffect(() => {
     if (!supabase) return;
@@ -239,6 +262,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // one would multiply load for no new data.
       if (session && event !== "TOKEN_REFRESHED") {
         void hydrate(session.user.id);
+        void syncPendingPhotos(session.user.id);
       } else if (session) {
         void flush();
       } else {
@@ -388,6 +412,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     await supabase?.auth.signOut();
     userId.current = null;
     localStorage.removeItem(KEY);
+    // Photographs of someone's meals are health data by context. "Delete
+    // everything" has to mean the IndexedDB copies too, not just the rows.
+    await import("./photoStore").then((m) => m.clearPhotos()).catch(() => {});
     setState(emptyState);
     setStatus("local");
   }, []);
