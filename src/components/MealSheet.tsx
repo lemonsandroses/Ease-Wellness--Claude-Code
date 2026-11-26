@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, Images, Loader2, RefreshCw, Trash2 } from "lucide-react";
+import { Camera, Images, Loader2, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Button, Chip, Eyebrow, Sheet } from "@/components/ui";
 import { useStore } from "@/lib/store";
@@ -41,6 +41,17 @@ const FIELDS = [
 
 type Macros = Pick<Meal, "calories" | "protein" | "carbs" | "fats" | "fibre">;
 
+/**
+ * Nothing is assumed about the meal until it is identified — by the estimator,
+ * by tapping a preset, or by typing it in.
+ *
+ * PRESETS[0] used to be preselected, so a photo of a pineapple saved as "Eggs
+ * and vegetables" with egg macros attached. A default that is silently wrong is
+ * worse than an empty one: it fills Patterns with numbers nobody entered and
+ * nobody can tell apart from numbers they did.
+ */
+const NO_MACROS: Macros = { calories: 0, protein: 0, carbs: 0, fats: 0, fibre: 0 };
+
 /** Marks an error as belonging to the photo controls rather than to saving,
  *  so each one renders beside the thing that produced it. */
 const PHOTO_ERROR_PREFIX = "photo:";
@@ -49,8 +60,8 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
   const { state, addMeal } = useStore();
   const [slot, setSlot] = useState<Meal["slot"]>("lunch");
   const [name, setName] = useState("");
-  const [macros, setMacros] = useState<Macros>(PRESETS[0]);
-  const [presetName, setPresetName] = useState(PRESETS[0].name);
+  const [macros, setMacros] = useState<Macros>(NO_MACROS);
+  const [presetName, setPresetName] = useState("");
   const [nutrients, setNutrients] = useState<string[]>([]);
   const [source, setSource] = useState<Meal["source"]>("manual");
 
@@ -84,8 +95,8 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
     setName("");
     setNutrients([]);
     setSource("manual");
-    setMacros(PRESETS[0]);
-    setPresetName(PRESETS[0].name);
+    setMacros(NO_MACROS);
+    setPresetName("");
     setSlot("lunch");
   }, []);
 
@@ -107,8 +118,13 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
       setSource("ai");
     } catch {
       // A failed estimate must not cost the photo or the log. Fall through to
-      // the preset picker and say so once.
-      setNotice("Couldn't read that photo. Pick the closest match instead.");
+      // manual entry and say so once.
+      //
+      // Deliberately not "couldn't read that photo": the usual causes are no
+      // signed-in session, the function not deployed, or no network — none of
+      // which are anything to do with the photograph, and blaming it sends
+      // people off retaking a picture that was fine.
+      setNotice("Couldn't estimate this one. Name it and set the macros below.");
       setSource("manual");
     } finally {
       setEstimating(false);
@@ -264,6 +280,21 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
                     <RefreshCw className="h-3.5 w-3.5" /> Estimate again
                   </button>
                 ) : null}
+
+                {/* Reading the plate is built but not switched on — see
+                    lib/mealAi. Saying so is better than silence: the obvious
+                    reading of a photo field in a calorie app is that something
+                    is looking at the photo, and nothing here is yet. */}
+                {!MEAL_AI_ENABLED ? (
+                  <div className="mt-2.5 flex items-start gap-2 rounded-2xl border border-veil bg-slate/50 px-3.5 py-2.5">
+                    <Sparkles className="mt-[1px] h-3.5 w-3.5 shrink-0 text-plasma-bright" />
+                    <p className="text-[12.5px] leading-relaxed text-ash">
+                      <span className="font-semibold text-silk">Reading the plate is coming.</span> Ease will name the
+                      food and fill the macros from the photo. For now the photo is saved with the meal — set the
+                      numbers below.
+                    </p>
+                  </div>
+                ) : null}
               </motion.div>
             ) : (
               <motion.div
@@ -386,7 +417,7 @@ export default function MealSheet({ open, onClose }: { open: boolean; onClose: (
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder={estimate?.name ?? presetName}
+            placeholder={estimate?.name || presetName || "What was it?"}
             className="mt-2 w-full rounded-2xl border border-veil bg-slate px-4 py-3.5 text-[15px] outline-none transition-colors focus:border-gloss focus:shadow-[0_0_0_3px_rgba(255,45,135,0.12)]"
           />
         </section>
